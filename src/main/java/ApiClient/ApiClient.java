@@ -1,11 +1,18 @@
 package ApiClient;
 
+import Models.Dns;
+import Models.DnsCache;
+import Models.DnsRecord;
+import Models.SystemResources;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.net.ssl.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.List;
 
 import static ApiClient.MikrotikConfig.*;
 
@@ -21,9 +28,48 @@ public class ApiClient {
         this.pass = password;
     }
 
-    public String getNodes() throws Exception {
-        return sendRequest("/system/resource");
+
+    public List<DnsCache> getCacheDns() throws Exception {
+        String json = sendRequest("/ip/dns/cache");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, DnsCache.class)
+        );
     }
+
+    public List<DnsRecord> getDnsRecord() throws Exception {
+        String json = sendRequest("/ip/dns/static");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, DnsRecord.class)
+        );
+    }
+
+
+    public Dns  getDnsConfig() throws Exception {
+        String json = sendRequest("/ip/dns");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                Dns.class
+        );
+    }
+
+
+    public SystemResources getSystemResources() throws Exception {
+        String json = sendRequest("/system/resource");
+        ObjectMapper mapper = new ObjectMapper();
+
+        return mapper.readValue(
+                json,
+                SystemResources.class
+        );
+    }
+
+
+
 
     private String sendRequest(String endpoint) throws Exception {
         URL urlObj = new URL(url + endpoint);
