@@ -1,0 +1,22 @@
+info:
+  name: Adicionar Nova Interface Bridge
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/interface/bridge/add"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "bridge2",
+        "disabled": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

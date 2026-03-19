@@ -1,0 +1,7 @@
+info:
+  name: security profiles
+  type: folder
+  seq: 8
+
+request:
+  auth: inherit

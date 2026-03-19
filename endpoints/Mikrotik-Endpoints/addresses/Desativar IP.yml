@@ -1,0 +1,21 @@
+info:
+  name: Desativar IP
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseURL}}/ip/address/disable"
+  body:
+    type: json
+    data: |-
+      {
+        "numbers": "*7"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

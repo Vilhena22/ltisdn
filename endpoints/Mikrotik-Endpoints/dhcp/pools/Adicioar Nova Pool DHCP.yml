@@ -1,0 +1,15 @@
+info:
+  name: Adicioar Nova Pool DHCP
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/ip/dhcp-server/network/add"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

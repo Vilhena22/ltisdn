@@ -1,0 +1,13 @@
+info:
+  name: interfaces
+  type: folder
+  seq: 1
+
+request:
+  auth:
+    type: basic
+    username: "{{username}}"
+    password: "{{password}}"
+  variables:
+    - name: ""
+      value: ""

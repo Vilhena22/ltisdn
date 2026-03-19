@@ -1,0 +1,21 @@
+info:
+  name: Des/Ativar IP
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseURL}}/ip/address/*7"
+  body:
+    type: json
+    data: |-
+      {
+        "disabled": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,10 @@
+info:
+  name: system
+  type: folder
+  seq: 6
+
+request:
+  auth:
+    type: basic
+    username: "{{username}}"
+    password: "{{password}}"

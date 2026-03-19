@@ -1,0 +1,26 @@
+info:
+  name: Adicionar Novo Perfil
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseURL}}/interface/wifi/security/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "sec2",
+        "authentication-types": "wpa2-psk",
+        "mode": "dynamic-keys",
+        "wpa2-pre-shared-key": "Senha@123",
+        "unicast-ciphers": "aes-ccm",
+        "group-ciphers": "aes-ccm"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

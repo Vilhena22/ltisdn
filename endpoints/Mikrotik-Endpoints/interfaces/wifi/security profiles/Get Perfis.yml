@@ -1,0 +1,15 @@
+info:
+  name: Get Perfis
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/interface/wifi/security"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

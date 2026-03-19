@@ -1,0 +1,22 @@
+info:
+  name: Adicionar Nova Porta Bridge
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/interface/bridge/port/add"
+  body:
+    type: json
+    data: |-
+      {
+        "bridge": "bridge2",
+        "interface": "ether4"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

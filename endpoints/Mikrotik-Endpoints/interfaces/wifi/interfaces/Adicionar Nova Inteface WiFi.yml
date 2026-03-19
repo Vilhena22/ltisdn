@@ -1,0 +1,27 @@
+info:
+  name: Adicionar Nova Inteface WiFi
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseURL}}/interface/wireless/add"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "wlan10",
+        "master-interface": "wlan1",
+        "mode": "ap-bridge",
+        "ssid": "Rede_PublicaTESTE",
+        "band": "2ghz-b/g/n",
+        "channel-width": "20mhz",
+        "disabled": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
