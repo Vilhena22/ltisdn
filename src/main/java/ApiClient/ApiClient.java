@@ -7,6 +7,13 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
+import Models.GetAddress;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.List;
+
 import static ApiClient.MikrotikConfig.*;
 
 public class ApiClient {
@@ -21,11 +28,8 @@ public class ApiClient {
         this.pass = password;
     }
 
-    public String getNodes() throws Exception {
-        return sendRequest("/system/resource");
-    }
-
-    private String sendRequest(String endpoint) throws Exception {
+    // Para metodos com GET
+    private String sendRequest(String endpoint,String requestType) throws Exception {
         URL urlObj = new URL(url + endpoint);
         HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
 
@@ -35,7 +39,18 @@ public class ApiClient {
         String credentials = Base64.getEncoder()
                 .encodeToString((user + ":" + pass).getBytes());
         conn.setRequestProperty("Authorization", "Basic " + credentials);
-        conn.setRequestMethod("GET");
+
+        if (requestType == "GET") {
+            conn.setRequestMethod("GET");
+        }else if(requestType == "POST"){
+            System.out.println("Post ok");
+        }else if(requestType == "DELETE"){
+            System.out.println("Delete ok");
+        }else if(requestType == "PUT"){
+            System.out.println("PUT ok");
+        }else {
+            System.out.println("PATCH ok");
+        }
 
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
@@ -61,5 +76,45 @@ public class ApiClient {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /// ADDRESSES
+
+    //GET: vai buscar todos os ips
+    public String GetAddress() throws Exception {
+        String endpoint = sendRequest("/ip/address", "GET");
+
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<GetAddress>>(){}.getType();
+        List<GetAddress> addresses = gson.fromJson(endpoint, listType);
+
+        // aceder aos dados
+        for (GetAddress address : addresses) {
+            System.out.println("id: " + address.id + "\nactual-interface: " + address.actual_interface + "\nip: " + address.address + "\nrunning: " + address.running + "\n");
+        }
+        return endpoint;
+    }
+
+    //POST: atualizar um ip
+    public String UpdateAddress(String id, String newAddress) throws Exception {
+        String endpoint = sendRequest("/ip/address/set", "POST");
+
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<GetAddress>>(){}.getType();
+        List<GetAddress> addresses = gson.fromJson(endpoint, listType);
+
+        // print da atualizacao
+        for (GetAddress address : addresses) {
+            System.out.println("id: " + address.id + "\nnovo ip: " + address.address + "\n");
+        }
+        return endpoint;
+    }
+
+    //DELETE: apagar ip
+    public String DeleteAddress(String id) throws Exception {
+        String endpoint = sendRequest("/ip/address/"+id, "DELETE");
+
+        System.out.println("Ip apagado!\n");
+        return endpoint;
     }
 }

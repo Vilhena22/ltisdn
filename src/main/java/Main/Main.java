@@ -4,6 +4,6 @@ import ApiClient.ApiClient;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        System.out.println(new ApiClient().getNodes());
+        System.out.println(new ApiClient().GetAddress());
     }
 }
