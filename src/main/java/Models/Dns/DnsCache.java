@@ -1,7 +1,5 @@
-package Models;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+package Models.Dns;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.gson.Gson;
 
 //@JsonIgnoreProperties(ignoreUnknown = true)
 public class DnsCache {

@@ -1,27 +1,33 @@
-package Models;
+package Models.Dns;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Dns {
-    @JsonProperty(".id")
+    @JsonProperty(value = ".id", access = JsonProperty.Access.READ_ONLY)
+    @JsonIgnore
+    private String id;
+    @JsonProperty(value = "address-list-extra-time", access = JsonProperty.Access.READ_ONLY)
     public String addressListExtraTime;
-    @JsonProperty("allow-remote-requests")
+    @JsonProperty(value = "allow-remote-requests", access = JsonProperty.Access.READ_ONLY)
     public String allowRemoteRequests;
     @JsonProperty("cache-max-ttl")
     public String cacheMaxTtl;
     @JsonProperty("cache-size")
     public String cacheSize;
-    @JsonProperty("cache-used")
+    @JsonProperty(value = "cache-used", access =  JsonProperty.Access.READ_ONLY)
+    @JsonIgnore
     public String cacheUsed;
     @JsonProperty("doh-max-concurrent-queries")
-    public String dohMaxConcurrentQueries;
+    public Integer dohMaxConcurrentQueries;
     @JsonProperty("doh-max-server-connections")
-    public String dohMaxServerConnections;
+    public Integer dohMaxServerConnections;
     @JsonProperty("doh-timeout")
     public String dohTimeout;
-    @JsonProperty("dynamic-servers")
+    @JsonProperty(value = "dynamic-servers", access =  JsonProperty.Access.READ_ONLY)
+    @JsonIgnore
     public String dynamicServers;
     @JsonProperty("max-concurrent-queries")
     public String maxConcurrentQueries;

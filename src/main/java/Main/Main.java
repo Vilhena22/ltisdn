@@ -4,6 +4,7 @@ import ApiClient.ApiClient;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        new ApiClient().postDnsRecord();
+        System.out.println(new ApiClient().postClearDnsCache());
+
     }
 }

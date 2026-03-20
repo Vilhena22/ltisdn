@@ -1,26 +1,27 @@
 package ApiClient;
 
-import Models.Dns;
-import Models.DnsCache;
-import Models.DnsRecord;
-import Models.SystemResources;
+import Models.*;
+import Models.Dns.Dns;
+import Models.Dns.DnsCache;
+import Models.Dns.DnsRecord;
+import Models.System.SystemResources;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.*;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.List;
 
-import Models.GetAddress;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.util.List;
 
 import static ApiClient.MikrotikConfig.*;
 
@@ -37,8 +38,8 @@ public class ApiClient {
     }
 
 
-    /*public List<DnsCache> getCacheDns() throws Exception {
-        String json = sendRequest("/ip/dns/cache", "GET");
+    public List<DnsCache> getCacheDns() throws Exception {
+        String json = sendRequestGet("/ip/dns/cache");
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(
                 json,
@@ -46,8 +47,12 @@ public class ApiClient {
         );
     }
 
+    public String postClearDnsCache() throws Exception {
+        return sendRequestPost("/ip/dns/cache/flush","{}");
+    }
+
     public List<DnsRecord> getDnsRecord() throws Exception {
-        String json = sendRequest("/ip/dns/static","GET");
+        String json = sendRequestGet("/ip/dns/static");
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(
                 json,
@@ -55,45 +60,88 @@ public class ApiClient {
         );
     }
 
+    public String postDnsRecord() throws Exception {
 
-    public Dns  getDnsConfig() throws Exception {
-        String json = sendRequest("/ip/dns","GET");
+        //Cria o objeto para enviar
+        ObjectMapper mapper = new ObjectMapper();
+        DnsRecord dnsRecord = new DnsRecord();
+        dnsRecord.name = "app.intranet";
+        dnsRecord.address = "10.0.0.20";
+        dnsRecord.ttl = 3600;
+        dnsRecord.disabled = "yes";
+        dnsRecord.type = "A";
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        //Converte o objeto em Json
+        String jsonString = mapper.writeValueAsString(dnsRecord);
+
+        //Realiza o post
+        String status = sendRequestPost("/ip/dns/static/add",  jsonString);
+        /*if (status == 200) {
+            return status;
+        }
+        return 0;*/
+        return status;
+    }
+
+    public Integer deleteDnsRecord(Integer id) throws Exception {
+        return sendRequestDelete("/ip/dns/static/*"+id.toString());
+    }
+
+
+    public Dns getDnsConfig() throws Exception {
+        String json = sendRequestGet("/ip/dns");
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(
                 json,
                 Dns.class
         );
-    }*/
+    }
 
-    public void postDnsRecord() throws Exception {
+    public String postDnsConfig() throws Exception {
 
+        //Cria o objeto para enviar
         ObjectMapper mapper = new ObjectMapper();
-        DnsRecord dnsRecord = new DnsRecord();
-        dnsRecord.name = "app.intranet.local";
-        dnsRecord.address = "10.0.0.20";
-        dnsRecord.ttl = "3600";
+        Dns dns = new Dns();
+        dns.addressListExtraTime ="0s";
+        dns.allowRemoteRequests = "true";
+        dns.cacheMaxTtl= "1w";
+        dns.cacheSize= "1024";
+        dns.verifyDohCert = "no";
+        dns.dohMaxConcurrentQueries =50;
+        dns.dohMaxServerConnections = 5;
+        dns.dohTimeout = "5s";
+        dns.maxConcurrentQueries ="100";
+        dns.maxConcurrentTcpSessions ="20";
+        dns.maxUdpPacketSize ="4096";
+        dns.queryServerTimeout = "2s";
+        dns.queryTotalTimeout = "10s";
+        dns.vrf = "main";
 
-        String jsonString = mapper.writeValueAsString(dnsRecord);
-        System.out.println("postDnsRecord: " + jsonString);
-        //sendRequest("/ip/dns/static/add","POST",  jsonString);
+        //Converte o objeto em Json
+        String jsonString = mapper.writeValueAsString(dns);
+
+        //Realiza o post
+        String status = sendRequestPost("/ip/dns/set",  jsonString);
+
+        return status;
 
     }
 
 
-    /*public SystemResources getSystemResources() throws Exception {
-        String json = sendRequest("/system/resource","GET");
+    public SystemResources getSystemResources() throws Exception {
+        String json = sendRequestGet("/system/resource");
         ObjectMapper mapper = new ObjectMapper();
-
         return mapper.readValue(
                 json,
                 SystemResources.class
         );
-    }*/
+    }
 
 
 
 
-    private String sendRequest(String endpoint,String requestType,String jsonBody) throws Exception {
+    private String sendRequestGet(String endpoint) throws Exception {
         URL urlObj = new URL(url + endpoint);
         HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
 
@@ -104,24 +152,7 @@ public class ApiClient {
                 .encodeToString((user + ":" + pass).getBytes());
         conn.setRequestProperty("Authorization", "Basic " + credentials);
 
-        if (requestType == "GET") {
-            conn.setRequestMethod("GET");
-        }else if(requestType == "POST"){
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(jsonBody.getBytes());
-                os.flush();
-            }
-            System.out.println("Post ok");
-        }else if(requestType == "DELETE"){
-            System.out.println("Delete ok");
-        }else if(requestType == "PUT"){
-            System.out.println("PUT ok");
-        }else {
-            System.out.println("PATCH ok");
-        }
-
+        conn.setRequestMethod("GET");
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;
@@ -130,6 +161,58 @@ public class ApiClient {
 
         return sb.toString();
     }
+
+    private String sendRequestPost(String endpoint,String jsonBody) throws Exception {
+        URL urlObj = new URL(url + endpoint);
+        HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
+
+        conn.setSSLSocketFactory(getInsecureSSLContext().getSocketFactory());
+        conn.setHostnameVerifier((hostname, session) -> true);
+        conn.setRequestProperty("Content-Type", "application/json");
+        String credentials = Base64.getEncoder()
+                .encodeToString((user + ":" + pass).getBytes());
+        conn.setRequestProperty("Authorization", "Basic " + credentials);
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+
+        //Converte o Json para enviar
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+        }
+
+        int status = conn.getResponseCode();
+
+        InputStream is = (status >= 200 && status < 300)
+                ? conn.getInputStream()
+                : conn.getErrorStream();
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) sb.append(line);
+        br.close();
+
+        return sb.toString();
+
+
+
+        //Devolve 200 OK ou o codigo Erro
+        //return conn.getResponseCode();
+    }
+
+    private Integer sendRequestDelete(String endpoint) throws Exception {
+        URL urlObj = new URL(url + endpoint);
+        HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
+        conn.setSSLSocketFactory(getInsecureSSLContext().getSocketFactory());
+        conn.setHostnameVerifier((hostname, session) -> true);
+        String credentials = Base64.getEncoder()
+                .encodeToString((user + ":" + pass).getBytes());
+        conn.setRequestProperty("Authorization", "Basic " + credentials);
+        conn.setRequestMethod("DELETE");
+        return conn.getResponseCode();
+    }
+
 
     private static SSLContext getInsecureSSLContext() {
         try {
@@ -150,9 +233,9 @@ public class ApiClient {
 
     /// ADDRESSES
 
-    /*//GET: vai buscar todos os ips
+    //GET: vai buscar todos os ips
     public String GetAddress() throws Exception {
-        String endpoint = sendRequest("/ip/address", "GET");
+        String endpoint = sendRequestGet("/ip/address");
 
         Gson gson = new Gson();
         Type listType = new TypeToken<List<GetAddress>>(){}.getType();
@@ -167,7 +250,7 @@ public class ApiClient {
 
     //POST: atualizar um ip
     public String UpdateAddress(String id, String newAddress) throws Exception {
-        String endpoint = sendRequest("/ip/address/set", "POST");
+        String endpoint = sendRequestGet("/ip/address/set");
 
         Gson gson = new Gson();
         Type listType = new TypeToken<List<GetAddress>>(){}.getType();
@@ -182,9 +265,9 @@ public class ApiClient {
 
     //DELETE: apagar ip
     public String DeleteAddress(String id) throws Exception {
-        String endpoint = sendRequest("/ip/address/"+id, "DELETE");
+        String endpoint = sendRequestGet("/ip/address/"+id);
 
         System.out.println("Ip apagado!\n");
         return endpoint;
-    }*/
+    }
 }
