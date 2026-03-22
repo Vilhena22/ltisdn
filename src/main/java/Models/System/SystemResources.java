@@ -35,4 +35,73 @@ public class SystemResources {
     public String writeSinceReboot;
     @JsonProperty("write-sect-total")
     public String writeSectTotal;
+
+
+    public String getArchitectureName() {
+        return architectureName;
+    }
+
+    public String getBoardName() {
+        return boardName;
+    }
+
+    public String getBuildTime() {
+        return buildTime;
+    }
+
+    public String getCpu() {
+        return cpu;
+    }
+
+    public String getCpuCount() {
+        return cpuCount;
+    }
+
+    public String getCpuFrequency() {
+        return cpuFrequency;
+    }
+
+    public String getCpuLoad() {
+        return cpuLoad;
+    }
+
+    public String getFactorySoftware() {
+        return factorySoftware;
+    }
+
+    public String getFreeHddSpace() {
+        return freeHddSpace;
+    }
+
+    public String getFreeMemory() {
+        return freeMemory;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public String getTotalHddSpace() {
+        return totalHddSpace;
+    }
+
+    public String getTotalMemory() {
+        return totalMemory;
+    }
+
+    public String getUptime() {
+        return uptime;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String getWriteSinceReboot() {
+        return writeSinceReboot;
+    }
+
+    public String getWriteSectTotal() {
+        return writeSectTotal;
+    }
 }

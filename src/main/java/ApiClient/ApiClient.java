@@ -1,18 +1,21 @@
 package ApiClient;
 
 import Models.*;
+import Models.Dhcp.Clients.DhcpClient;
+import Models.Dhcp.Leases.DhcpLease;
+import Models.Dhcp.Pools.DhcpPool;
+import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.Dns;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
 import Models.System.SystemResources;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.*;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
@@ -37,7 +40,7 @@ public class ApiClient {
         this.pass = password;
     }
 
-
+    //DNS Cache
     public List<DnsCache> getCacheDns() throws Exception {
         String json = sendRequestGet("/ip/dns/cache");
         ObjectMapper mapper = new ObjectMapper();
@@ -51,6 +54,7 @@ public class ApiClient {
         return sendRequestPost("/ip/dns/cache/flush","{}");
     }
 
+    //DNS Records
     public List<DnsRecord> getDnsRecord() throws Exception {
         String json = sendRequestGet("/ip/dns/static");
         ObjectMapper mapper = new ObjectMapper();
@@ -67,28 +71,23 @@ public class ApiClient {
         DnsRecord dnsRecord = new DnsRecord();
         dnsRecord.name = "app.intranet";
         dnsRecord.address = "10.0.0.20";
-        dnsRecord.ttl = 3600;
+        dnsRecord.ttl = "3600";
         dnsRecord.disabled = "yes";
         dnsRecord.type = "A";
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         //Converte o objeto em Json
         String jsonString = mapper.writeValueAsString(dnsRecord);
-
         //Realiza o post
-        String status = sendRequestPost("/ip/dns/static/add",  jsonString);
-        /*if (status == 200) {
-            return status;
-        }
-        return 0;*/
-        return status;
+        return sendRequestPost("/ip/dns/static/add",  jsonString);
+
     }
 
     public Integer deleteDnsRecord(Integer id) throws Exception {
         return sendRequestDelete("/ip/dns/static/*"+id.toString());
     }
 
-
+    //DNS Configuration
     public Dns getDnsConfig() throws Exception {
         String json = sendRequestGet("/ip/dns");
         ObjectMapper mapper = new ObjectMapper();
@@ -138,20 +137,161 @@ public class ApiClient {
         );
     }
 
+    //DHCP
+        //Pools
+    public List<DhcpPool> getDhcpPools() throws Exception {
+        String json = sendRequestGet("/ip/dhcp-server/network");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, DhcpPool.class));
+    }
+
+    public String postDhcpPool() throws Exception {
+        //Converte o objeto em Json
+        ObjectMapper mapper = new ObjectMapper();
+        DhcpPool dhcpPool = new DhcpPool();
+        dhcpPool.address ="192.168.100.0/24";
+        dhcpPool.dnsServer = "192.168.100.1";
+        dhcpPool.gateway ="192.168.100.100";
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpPool);
+
+
+        return sendRequestPost("/ip/dhcp-server/network/add",jsonString);
+    }
+
+    public Integer deleteDhcpPool(Integer id) throws Exception {
+        return sendRequestDelete("/ip/dhcp-server/network/*"+ id.toString());
+    }
+
+        //Leases
+    public List<DhcpLease> getDhcpLeases() throws Exception {
+        String json = sendRequestGet("/ip/dhcp-server/lease");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, DhcpLease.class));
+    }
+
+
+    public String postDhcpLease() throws Exception {
+        //Converte o objeto em Json
+        ObjectMapper mapper = new ObjectMapper();
+        DhcpLease dhcpLease = new DhcpLease();
+
+        dhcpLease.address ="192.168.100.100";
+        dhcpLease.clientId = "*9";
+        dhcpLease.server ="dhcp1";
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpLease);
+
+
+        return sendRequestPost("/ip/dhcp-server/lease/add",jsonString);
+    }
+
+    public Integer deleteDhcpLease(Integer id) throws Exception {
+        return sendRequestDelete("/ip/dhcp-server/lease/*"+ id.toString());
+    }
+
+
+    //clients
+    public List<DhcpClient> getDhcpClients() throws Exception {
+        String json = sendRequestGet("/ip/dhcp-client");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, DhcpClient.class));
+    }
+
+
+    public String postDhcpClients() throws Exception {
+        //Converte o objeto em Json
+        ObjectMapper mapper = new ObjectMapper();
+        DhcpClient dhcpClient = new DhcpClient();
+
+        dhcpClient.interfaceName = "wlan2";
+        dhcpClient.addDefaultRoute = "yes";
+        dhcpClient.usePeerDns = "yes";
+        dhcpClient.usePeerNtp = "true";
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpClient);
+
+
+        return sendRequestPost("/ip/dhcp-client/add",jsonString);
+    }
+
+    public Integer deleteDhcpClients(String id) throws Exception {
+        return sendRequestDelete("/ip/dhcp-client/*"+ id);
+    }
+
+
+
+
+
+    public String postDesActivateClient(String id, Boolean state) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        DhcpClient dhcpClient = new DhcpClient();
+        dhcpClient.id = "*"+id;
+        dhcpClient.disabled = state.toString();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpClient);
+        return sendRequestPost("/ip/dhcp-client/set",jsonString);
+    }
+
+
+    //Server
+    public List<DhcpServer> getDhcpServer() throws Exception {
+        String json = sendRequestGet("/ip/dhcp-server");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, DhcpServer.class));
+    }
+
+
+    public String postDhcpServer() throws Exception {
+        //Converte o objeto em Json
+        ObjectMapper mapper = new ObjectMapper();
+        DhcpServer dhcpServer = new DhcpServer();
+
+        dhcpServer.addressPool = "dhcp_pool0";
+        dhcpServer.disabled = "true";
+        dhcpServer.interfaceName = "wlan2";
+        dhcpServer.name = "dhcpTeste";
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpServer);
+
+
+        return sendRequestPost("/ip/dhcp-server/add",jsonString);
+    }
+
+    public Integer deleteDhcpServer(String id) throws Exception {
+        return sendRequestDelete("/ip/dhcp-server/*"+ id);
+    }
+
+
+
+
+
+    public String postDesActivateServer(String id, Boolean state) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        DhcpServer dhcpServer = new DhcpServer();
+        dhcpServer.id = "*"+id;
+        dhcpServer.disabled = state.toString();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpServer);
+        return sendRequestPost("/ip/dhcp-server/set",jsonString);
+    }
 
 
 
     private String sendRequestGet(String endpoint) throws Exception {
-        URL urlObj = new URL(url + endpoint);
-        HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
-
-        conn.setSSLSocketFactory(getInsecureSSLContext().getSocketFactory());
-        conn.setHostnameVerifier((hostname, session) -> true);
-
-        String credentials = Base64.getEncoder()
-                .encodeToString((user + ":" + pass).getBytes());
-        conn.setRequestProperty("Authorization", "Basic " + credentials);
-
+        HttpsURLConnection conn = getHttpsURLConnection(endpoint);
         conn.setRequestMethod("GET");
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
@@ -163,15 +303,9 @@ public class ApiClient {
     }
 
     private String sendRequestPost(String endpoint,String jsonBody) throws Exception {
-        URL urlObj = new URL(url + endpoint);
-        HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
+        HttpsURLConnection conn = getHttpsURLConnection(endpoint);
 
-        conn.setSSLSocketFactory(getInsecureSSLContext().getSocketFactory());
-        conn.setHostnameVerifier((hostname, session) -> true);
         conn.setRequestProperty("Content-Type", "application/json");
-        String credentials = Base64.getEncoder()
-                .encodeToString((user + ":" + pass).getBytes());
-        conn.setRequestProperty("Authorization", "Basic " + credentials);
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
 
@@ -194,23 +328,53 @@ public class ApiClient {
         br.close();
 
         return sb.toString();
-
-
-
-        //Devolve 200 OK ou o codigo Erro
-        //return conn.getResponseCode();
     }
 
+    private String sendRequestPut(String endpoint,String jsonBody) throws Exception {
+        HttpsURLConnection conn = getHttpsURLConnection(endpoint);
+
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestMethod("PUT");
+        conn.setDoOutput(true);
+
+        //Converte o Json para enviar
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+            os.flush();
+        }
+
+        int status = conn.getResponseCode();
+
+        InputStream is = (status >= 200 && status < 300)
+                ? conn.getInputStream()
+                : conn.getErrorStream();
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) sb.append(line);
+        br.close();
+
+        return sb.toString();
+    }
+
+
     private Integer sendRequestDelete(String endpoint) throws Exception {
+        HttpsURLConnection conn = getHttpsURLConnection(endpoint);
+        conn.setRequestMethod("DELETE");
+        return conn.getResponseCode();
+    }
+
+    private HttpsURLConnection getHttpsURLConnection(String endpoint) throws IOException {
         URL urlObj = new URL(url + endpoint);
         HttpsURLConnection conn = (HttpsURLConnection) urlObj.openConnection();
+
         conn.setSSLSocketFactory(getInsecureSSLContext().getSocketFactory());
         conn.setHostnameVerifier((hostname, session) -> true);
         String credentials = Base64.getEncoder()
                 .encodeToString((user + ":" + pass).getBytes());
         conn.setRequestProperty("Authorization", "Basic " + credentials);
-        conn.setRequestMethod("DELETE");
-        return conn.getResponseCode();
+        return conn;
     }
 
 
