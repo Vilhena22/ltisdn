@@ -9,7 +9,7 @@ public class DnsRecord {
     public String id;
     public String address;
     public String name;
-    public String disabled;
+    public Boolean disabled;
     public String dynamic;
     public String ttl;
     public String type;
