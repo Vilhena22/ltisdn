@@ -8,6 +8,15 @@ import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.Dns;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
+import Models.Interfaces.bridge.interfaces.addNewInterfaceBridge;
+import Models.Interfaces.bridge.interfaces.getInterfaceBridge;
+import Models.Interfaces.bridge.ports.AddBridgePort;
+import Models.Interfaces.bridge.ports.GetPorts;
+import Models.Interfaces.getAllInterfaces;
+import Models.Interfaces.wifi.interfaces.AddInterface;
+import Models.Interfaces.wifi.interfaces.GetInterfaces;
+import Models.Interfaces.wifi.securityProfiles.AddProfile;
+import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.System.SystemResources;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -411,6 +420,7 @@ public class ApiClient {
     public String UpdateAddress(String id, String newAddress) throws Exception {
         String endpoint = sendRequestGet("/ip/address/set");
 
+        //converter objeto para json
         Gson gson = new Gson();
         Type listType = new TypeToken<List<GetAddress>>(){}.getType();
         List<GetAddress> addresses = gson.fromJson(endpoint, listType);
@@ -423,11 +433,14 @@ public class ApiClient {
     }
 
     //DELETE: apagar ip
-    public String DeleteAddress(String id) throws Exception {
-        String endpoint = sendRequestGet("/ip/address/"+id);
+    public Integer DeleteAddress(String id) throws Exception {
+        Integer endpointResult = sendRequestDelete("/ip/address/"+id);
 
-        System.out.println("Ip apagado!\n");
-        return endpoint;
+        if (endpointResult == 200){
+            System.out.println("Ip apagado!\n");
+            return endpointResult;
+        }
+        return 500;
     }
 
     //POST: desativar/ativar ip
@@ -436,7 +449,7 @@ public class ApiClient {
         boolean NovoEstado = !state;
 
         // cria o JSON que a Mikrotik espera
-        String payload = "disabled: " + NovoEstado;
+        String payload = "{disabled: " + NovoEstado + "}";
 
         //envia o post com os novos dados
         String endpoint = sendRequestPost("/ip/adddres/" + id, payload);
@@ -448,6 +461,217 @@ public class ApiClient {
 
     //WiFi
     //Interfaces
+
+    public String AddInterfaceWifi() throws Exception {
+
+        AddInterface novaInterface = new AddInterface();
+        novaInterface.name = "wlan10";
+        novaInterface.master_interface = "wlan1";
+        novaInterface.mode = "ap-bridge";
+        novaInterface.ssid = "Rede_PublicaTESTE";
+        novaInterface.band = "2ghz-b/g/n";
+        novaInterface.channel_width = "20mhz";
+        novaInterface.disabled = true;
+
+        //converter objeto para json
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaInterface);
+
+        String endpoint = sendRequestPost("/interface/wireless/add", payload);
+
+        return endpoint;
+    }
+
+    public List<GetInterfaces> GetInterfacesWifi() throws Exception {
+        String endpoint = sendRequestGet("/interface/wireless");
+
+        //converte json em objeto
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<GetInterfaces>>(){}.getType();
+
+        return gson.fromJson(endpoint, listType);
+    }
+
+    public Integer DeleteInterfaceWifi(String id) throws Exception {
+        return sendRequestDelete("/interface/wifi/"+id);
+    }
+
+    // Security Profiles
+
+    public String AddProfile() throws Exception {
+
+        AddProfile novoProfile = new AddProfile();
+        novoProfile.name = "wlan10";
+        novoProfile.authentication_types = "wlan1";
+        novoProfile.mode = "ap-bridge";
+        novoProfile.wpa2_pre_shared_key = "Rede_PublicaTESTE";
+        novoProfile.unicast_ciphers = "2ghz-b/g/n";
+        novoProfile.group_ciphers = "20mhz";
+
+        //converter objeto para json
+        Gson gson = new Gson();
+        String payload = gson.toJson(novoProfile);
+
+        String endpoint = sendRequestPost("/interface/wifi/security/", payload);
+        return endpoint;
+    }
+
+    public List<GetProfiles> GetProfiles() throws Exception {
+        String endpoint = sendRequestGet("/interface/wifi/security");
+
+        //converte json em objeto
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<GetProfiles>>(){}.getType();
+
+        return gson.fromJson(endpoint, listType);
+    }
+
+    public Integer DeleteSecurityProfile(String id) throws Exception {
+        return sendRequestDelete("/interface/wifi/security/" + id);
+    }
+
+    // BRIDGE
+    // ports
+
+    public List<GetPorts> getBridgePorts() throws Exception {
+        String endpoint = sendRequestGet("/interface/bridge/port");
+
+        //converte json em objeto
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<GetPorts>>(){}.getType();
+
+        return gson.fromJson(endpoint, listType);
+    }
+
+    public Integer deleteBridgePort(String id) throws Exception {
+        return sendRequestDelete("/interface/bridge/port/" + id);
+    }
+
+    public String addBridgePort() throws Exception {
+
+        AddBridgePort novaBridge = new AddBridgePort();
+        novaBridge.interfaceAtual = "oioi";
+        novaBridge.bridge = "bem vindo";
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaBridge);
+
+        return sendRequestPost("/interface/wifi/security/", payload);
+    }
+
+    // interfaces
+
+    public List<getInterfaceBridge> getBridgeInterfaces() throws Exception {
+        String endpoint = sendRequestGet("/interface/bridge");
+
+        //converte json em objeto
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<getInterfaceBridge>>(){}.getType();
+
+        return gson.fromJson(endpoint, listType);
+    }
+
+    public Integer deleteInterfaceBridge(String id) throws Exception {
+        return sendRequestDelete("/interface/bridge/" + id);
+    }
+
+    public String addInterfaceBridge() throws Exception {
+
+        addNewInterfaceBridge novaInterfaceBridge = new addNewInterfaceBridge();
+        novaInterfaceBridge.name = "oioi";
+        novaInterfaceBridge.disabled = true;
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaInterfaceBridge);
+
+        return sendRequestPost("/interface/bridge/add", payload);
+    }
+
+    // geral
+
+    public List<getAllInterfaces> getAllInterfaces() throws Exception {
+        String endpoint = sendRequestGet("/interface");
+
+        //converte json em objeto
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<getAllInterfaces>>(){}.getType();
+
+        return gson.fromJson(endpoint, listType);
+    }
+
+    public Integer deleteInterface(String id) throws Exception {
+        return sendRequestDelete("/interface/" + id);
+    }
+
+    public String estadoInterface(String id, boolean state) throws Exception {
+        //troca o estado da interface
+        boolean NovoEstado = !state;
+
+        // cria o JSON que a Mikrotik espera
+        String payload = "{disabled: " + NovoEstado + "}";
+
+        //envia o post com os novos dados
+        String endpoint = sendRequestPost("/interface/" + id, payload);
+
+        return endpoint;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
