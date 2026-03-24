@@ -1,4 +1,4 @@
-package Models;
+package Models.Address;
 
 import com.google.gson.annotations.SerializedName;
 

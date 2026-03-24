@@ -1,6 +1,6 @@
 package ApiClient;
 
-import Models.*;
+import Models.Address.GetAddress;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
 import Models.Dhcp.Pools.DhcpPool;
@@ -9,9 +9,7 @@ import Models.Dns.Dns;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
 import Models.System.SystemResources;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.*;
@@ -224,9 +222,6 @@ public class ApiClient {
     }
 
 
-
-
-
     public String postDesActivateClient(String id, Boolean state) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         DhcpClient dhcpClient = new DhcpClient();
@@ -429,4 +424,26 @@ public class ApiClient {
         System.out.println("Ip apagado!\n");
         return endpoint;
     }
+
+    //POST: desativar/ativar ip
+    public String EstadoIPAddress(String id, boolean state) throws Exception{
+        //troca o estado do ip
+        boolean NovoEstado = !state;
+
+        // cria o JSON que a Mikrotik espera
+        String payload = "disabled: " + NovoEstado;
+
+        //envia o post com os novos dados
+        String endpoint = sendRequestPost("/ip/adddres/" + id, payload);
+
+        return endpoint;
+    }
+
+    /// INTERFACES
+
+    //WiFi
+    //Interfaces
+
+
+
 }
