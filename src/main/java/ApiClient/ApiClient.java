@@ -71,18 +71,13 @@ public class ApiClient {
         );
     }
 
-    public String postDnsRecord() throws Exception {
+    public String postDnsRecord(DnsRecord dnsRecord) throws Exception {
 
         //Cria o objeto para enviar
         ObjectMapper mapper = new ObjectMapper();
-        DnsRecord dnsRecord = new DnsRecord();
-        dnsRecord.name = "app.intranet";
-        dnsRecord.address = "10.0.0.20";
-        dnsRecord.ttl = "3600";
-        dnsRecord.disabled = "yes";
-        dnsRecord.type = "A";
 
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
         //Converte o objeto em Json
         String jsonString = mapper.writeValueAsString(dnsRecord);
         //Realiza o post
@@ -90,8 +85,8 @@ public class ApiClient {
 
     }
 
-    public Integer deleteDnsRecord(Integer id) throws Exception {
-        return sendRequestDelete("/ip/dns/static/*"+id.toString());
+    public Integer deleteDnsRecord(String id) throws Exception {
+        return sendRequestDelete("/ip/dns/static/"+id);
     }
 
     //DNS Configuration
