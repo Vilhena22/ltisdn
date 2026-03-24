@@ -449,10 +449,6 @@ public class ApiClient {
     //WiFi
     //Interfaces
 
-    public String AdicionarIPInterface(){
-
-    }
-
 
 
 }
