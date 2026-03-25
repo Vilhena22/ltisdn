@@ -2,6 +2,8 @@ package Forms;
 
 import ApiClient.ApiClient;
 import Models.Dhcp.Clients.DhcpClient;
+import Models.Dhcp.Leases.DhcpLease;
+import Models.Dhcp.Pools.DhcpPool;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
 import Models.System.SystemResources;
@@ -12,17 +14,15 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class HomePage {
-    private JFrame owner;
+    private final JFrame owner;
     private JPanel mainPanel;
     private JPanel navBar;
     private JButton routeButton;
@@ -62,11 +62,15 @@ public class HomePage {
     private JButton addRecordbutton;
     private JTabbedPane tabbedPane1;
     private JTable recordsTable;
-    private JScrollPane cacheScroll;
-    private JScrollPane recordScroll;
     private JButton deleteRecord;
     private JPanel dhcpPanel;
-    private ApiClient apiClient;
+    private JTabbedPane tabbedDhcp;
+    private JTable dhcpPoolTable;
+    private JTable dhcpClientsTable;
+    private JTable dhcpServerTable;
+    private JTable dhcpLeasesTable;
+    private JButton deleteButton;
+    private final ApiClient apiClient;
 
 
     public HomePage(Boolean isThemeDark, JFrame owner) throws Exception{
@@ -79,6 +83,7 @@ public class HomePage {
         }else {
             setColors(Color.WHITE, new Color(60, 63, 65));
         }
+        this.apiClient = new ApiClient();
 
         setDashboardValues();
         if (isThemeDark) {
@@ -93,6 +98,10 @@ public class HomePage {
         clearCacheButton.addActionListener(this::btnClearCahce);
         addRecordbutton.addActionListener(this::btnAddRecord);
         deleteRecord.addActionListener(this::btnDeleteRecord);
+        deleteButton.addActionListener(this::btnDeleteButton);
+    }
+
+    private void btnDeleteButton(ActionEvent actionEvent) {
 
     }
 
@@ -100,14 +109,100 @@ public class HomePage {
         dnsPanel.setVisible(false);
         cpuPanel.setVisible(false);
         statsPanel.setVisible(false);
-        System.out.println(contentPanel.getComponents().toString());
+
+        fillDhcpTable();
+
+        dhcpPanel.setVisible(true);
+
+
+
+    }
+
+    private void fillDhcpTable() {
+        String[] columNames = {"ID","Address","Caps-Manager","Dhcp-Option","Dns-Derver","Dynamic", "Gateway","Ntp-Server","Wins-Server" };
+        DefaultTableModel model = new DefaultTableModel(columNames, 0);
+
         try {
-            DhcpPanel dhcpPanel = new DhcpPanel(owner);
+            for (DhcpPool dhcpPool : apiClient.getDhcpPools()) {
+                Object[] row = {
+                        dhcpPool.id,
+                        dhcpPool.address,
+                        dhcpPool.capsManager,
+                        dhcpPool.dhcpOption,
+                        dhcpPool.dnsServer,
+                        dhcpPool.dynamic,
+                        dhcpPool.gateway,
+                        dhcpPool.ntpServer,
+                        dhcpPool.winsServer
+                };
+                model.addRow(row);
+            }
+            formatTable(dhcpPoolTable, model);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        //contentPanel.add(dhcpPanel);
+        try {
+            columNames = new String[] {"ID","Address","Caps-Manager","Dhcp-Option","Dns-Derver","Dynamic", "Gateway","Ntp-Server","Wins-Server" };
+            model = new DefaultTableModel(columNames, 0);
+            for (DhcpClient dhcpClient : apiClient.getDhcpClients()) {
+                Object[] row = {
+                        dhcpClient.id,
+                        dhcpClient.interfaceName,
+                        dhcpClient.defaultRouteTables,
+                        dhcpClient.dhcpOption
+                };
+                model.addRow(row);
+            }
 
+            formatTable(dhcpClientsTable, model);
+
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
+
+        try {
+            columNames = new String[] {"ID","Address","Blocked","Client-ID","Disabled","Dynamic", "Last-Seen","Server","Status" };
+            model = new DefaultTableModel(columNames, 0);
+            for (DhcpLease lease : apiClient.getDhcpLeases()) {
+                Object[] row = {
+                        lease.id,
+                        lease.address,
+                        lease.blocked,
+                        lease.clientId,
+                        lease.disabled,
+                        lease.dynamic,
+                        lease.lastSeen,
+                        lease.server,
+                        lease.status
+                };
+                model.addRow(row);
+            }
+            formatTable(dhcpLeasesTable, model);
+
+            dhcpPanel.setVisible(true);
+        } catch (Exception exception) {
+            throw new RuntimeException(exception);
+        }
+
+    }
+
+    private void formatTable(JTable table,DefaultTableModel model) {
+        table.setModel(model);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.getSelectionModel().addListSelectionListener(e2 -> {
+            if (e2.getValueIsAdjusting()) {
+                boolean visible = table.getSelectedRowCount() > 0;
+                deleteButton.setEnabled(visible);
+            }
+        });
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+        table.setVisible(true);
     }
 
     private void btnDeleteRecord(ActionEvent actionEvent) {
@@ -120,7 +215,7 @@ public class HomePage {
                 throw new RuntimeException(e);
             }
         }
-        fillTable();
+        fillDnsTable();
     }
 
     private void btnAddRecord(ActionEvent actionEvent) {
@@ -128,19 +223,16 @@ public class HomePage {
         addDnsRecord.pack();
         addDnsRecord.setLocationRelativeTo(owner);
         addDnsRecord.setVisible(true);
-        fillTable();
+        fillDnsTable();
     }
 
-    private void fillTable() {
+
+    private void fillDnsTable() {
         String[] columNames = {"ID","Data","Name","Static","TTL","Type"};
 
         DefaultTableModel model = new DefaultTableModel(columNames, 0);
-        List<DnsCache> cacheList = null;
-        List<DnsRecord> recordList = null;
         try {
-            cacheList = apiClient.getCacheDns();
-            recordList = apiClient.getDnsRecord();
-            for (DnsCache dnsCache : cacheList) {
+            for (DnsCache dnsCache : apiClient.getCacheDns()) {
                 Object[] row = {
                         dnsCache.id,
                         dnsCache.data,
@@ -151,10 +243,11 @@ public class HomePage {
                 };
                 model.addRow(row);
             }
-            cacheTable.setModel(model);
+            formatTable(cacheTable, model);
+
             columNames = new String[]{"ID", "Data", "Name", "Dynamic","Disabled", "TTL", "Type"};
             model = new DefaultTableModel(columNames, 0);
-            for (DnsRecord dnsRecord : recordList) {
+            for (DnsRecord dnsRecord : apiClient.getDnsRecord()) {
                 Object[] row = {
                         dnsRecord.id,
                         dnsRecord.address,
@@ -166,24 +259,7 @@ public class HomePage {
                 };
                 model.addRow(row);
             }
-            recordsTable.setModel(model);
-            recordsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-            recordsTable.getSelectionModel().addListSelectionListener(e -> {
-                if (e.getValueIsAdjusting()) {
-                    boolean visible = recordsTable.getSelectedRowCount() > 0;
-                    deleteRecord.setEnabled(visible);
-                }
-            });
-            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-            centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-
-            for (int i = 0; i < cacheTable.getColumnCount(); i++) {
-                cacheTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-            }
-
-            for (int i = 0; i < recordsTable.getColumnCount(); i++) {
-                recordsTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-            }
+            formatTable(recordsTable, model);
 
             dnsPanel.setVisible(true);
         } catch (Exception e) {
@@ -204,10 +280,9 @@ public class HomePage {
     private void btnDnsButton(ActionEvent actionEvent) {
         statsPanel.setVisible(false);
         cpuPanel.setVisible(false);
-
-        apiClient = new ApiClient();
+        dhcpPanel.setVisible(false);
         try {
-            fillTable();
+            fillDnsTable();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -218,6 +293,7 @@ public class HomePage {
             statsPanel.setVisible(true);
             cpuPanel.setVisible(true);
             dnsPanel.setVisible(false);
+            dhcpPanel.setVisible(false);
             setDashboardValues();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -312,6 +388,28 @@ public class HomePage {
         recordsTable.setForeground(textColor);
 
         dnsPanel.setVisible(false);
+
+        // DHCP Panel
+
+        dhcpPanel.setBackground(backColor);
+        dhcpPanel.setForeground(textColor);
+
+        deleteButton.setBackground(buttonColor);
+        deleteButton.setForeground(textColor);
+
+        tabbedDhcp.setBackground(backColor);
+        tabbedDhcp.setForeground(textColor);
+
+        dhcpServerTable.setBackground(backColor);
+        dhcpServerTable.setForeground(textColor);
+        dhcpPoolTable.setBackground(backColor);
+        dhcpPoolTable.setForeground(textColor);
+        dhcpClientsTable.setBackground(backColor);
+        dhcpClientsTable.setForeground(textColor);
+        dhcpLeasesTable.setBackground(backColor);
+        dhcpLeasesTable.setForeground(textColor);
+
+        dhcpPanel.setVisible(false);
     }
 
     public JPanel getMainPanel() {
@@ -319,7 +417,6 @@ public class HomePage {
     }
 
     private void setDashboardValues() throws Exception{
-        apiClient = new ApiClient();
         SystemResources sys = apiClient.getSystemResources();
         cpuName.setText(sys.getCpu());
         cores.setText(sys.getCpuCount());
@@ -338,7 +435,7 @@ public class HomePage {
             progressBarLoad.setForeground(Color.ORANGE);
         }
         progressBarLoad.setValue(load);
-        progressBarLoad.setString(Integer.toString(load) +"%");
+        progressBarLoad.setString(load +"%");
         progressBarLoad.setStringPainted(true);
 
         if (usedMem > 90) {
@@ -372,7 +469,7 @@ public class HomePage {
     }
 
     private void buildChart(Color backColor, Color textColor) throws Exception{
-        apiClient = new ApiClient();
+
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
         for ( DhcpClient iface : apiClient.getDhcpClients()) {
@@ -399,7 +496,7 @@ public class HomePage {
         statsPanel.setLayout(new BorderLayout());
         statsPanel.add(chartPanel, BorderLayout.CENTER);
         statsPanel.validate(); // força o layout a atualizar
-
+        statsPanel.setVisible(true);
     }
 
     private void createUIComponents(){
@@ -468,7 +565,16 @@ public class HomePage {
         recordsTable.setFont(font);
         tabbedPane1.setFont(font);
 
+        //DHCP Panel
 
+        deleteButton.setFont(font);
+        deleteButton.setFocusPainted(false);
+        deleteButton.setBorderPainted(false);
+        deleteButton.setEnabled(false);
+        dhcpLeasesTable.setFont(font);
+        dhcpClientsTable.setFont(font);
+        dhcpPoolTable.setFont(font);
+        dhcpServerTable.setFont(font);
 
 
     }
