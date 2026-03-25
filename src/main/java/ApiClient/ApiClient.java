@@ -1,6 +1,8 @@
 package ApiClient;
 
+import Models.Address.AddAddress;
 import Models.Address.GetAddress;
+import Models.Address.UpdateAddress;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
 import Models.Dhcp.Pools.DhcpPool;
@@ -17,6 +19,7 @@ import Models.Interfaces.wifi.interfaces.AddInterface;
 import Models.Interfaces.wifi.interfaces.GetInterfaces;
 import Models.Interfaces.wifi.securityProfiles.AddProfile;
 import Models.Interfaces.wifi.securityProfiles.GetProfiles;
+import Models.Route.Routes;
 import Models.System.SystemResources;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -406,25 +409,38 @@ public class ApiClient {
 
         // aceder aos dados
         for (GetAddress address : addresses) {
-            System.out.println("id: " + address.id + "\nactual-interface: " + address.actual_interface + "\nip: " + address.address + "\nrunning: " + address.running + "\n");
+            System.out.println("id: " + address.id + "\nactual-interface: " + address.actual_interface + "\nip: " + address.address + "\ndisabled: " + address.disabled + "\n");
         }
         return endpoint;
     }
 
     //POST: atualizar um ip
     public String UpdateAddress(String id, String newAddress) throws Exception {
-        String endpoint = sendRequestGet("/ip/address/set");
+
+        UpdateAddress novoIP = new UpdateAddress();
+        novoIP.id = "*A";
+        novoIP.address = "10.30.40.50/24";
+
 
         //converter objeto para json
         Gson gson = new Gson();
-        Type listType = new TypeToken<List<GetAddress>>(){}.getType();
-        List<GetAddress> addresses = gson.fromJson(endpoint, listType);
+        String payload = gson.toJson(novoIP);
 
-        // print da atualizacao
-        for (GetAddress address : addresses) {
-            System.out.println("id: " + address.id + "\nnovo ip: " + address.address + "\n");
-        }
+        String endpoint = sendRequestPost("/ip/address/set", payload);
         return endpoint;
+    }
+
+    //POST: adicionar um address
+    public String AddAddress() throws Exception {
+
+        AddAddress newAddr = new AddAddress();
+        newAddr.address = "20.30.40.55";
+        newAddr.interf = "bridge2";
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(newAddr);
+
+        return sendRequestPost("/ip/address/add", payload);
     }
 
     //DELETE: apagar ip
@@ -439,15 +455,14 @@ public class ApiClient {
     }
 
     //POST: desativar/ativar ip
-    public String EstadoIPAddress(String id, boolean state) throws Exception{
-        //troca o estado do ip
-        boolean NovoEstado = !state;
+    public String EstadoIPAddress(String id, boolean disabled) throws Exception{
 
         // cria o JSON que a Mikrotik espera
-        String payload = "{disabled: " + NovoEstado + "}";
+        String payload = "{ \".id\": \"" + id +"\",\n" +
+                         "\"disabled\": " + disabled + "}";
 
         //envia o post com os novos dados
-        String endpoint = sendRequestPost("/ip/adddres/" + id, payload);
+        String endpoint = sendRequestPost("/ip/address/set", payload);
 
         return endpoint;
     }
@@ -460,7 +475,7 @@ public class ApiClient {
     public String AddInterfaceWifi() throws Exception {
 
         AddInterface novaInterface = new AddInterface();
-        novaInterface.name = "wlan10";
+        novaInterface.name = "wlan1023";
         novaInterface.master_interface = "wlan1";
         novaInterface.mode = "ap-bridge";
         novaInterface.ssid = "Rede_PublicaTESTE";
@@ -496,18 +511,14 @@ public class ApiClient {
     public String AddProfile() throws Exception {
 
         AddProfile novoProfile = new AddProfile();
-        novoProfile.name = "wlan10";
-        novoProfile.authentication_types = "wlan1";
-        novoProfile.mode = "ap-bridge";
-        novoProfile.wpa2_pre_shared_key = "Rede_PublicaTESTE";
-        novoProfile.unicast_ciphers = "2ghz-b/g/n";
-        novoProfile.group_ciphers = "20mhz";
+        novoProfile.name = "wlan1023";
+        novoProfile.disabled = true;
 
         //converter objeto para json
         Gson gson = new Gson();
         String payload = gson.toJson(novoProfile);
 
-        String endpoint = sendRequestPost("/interface/wifi/security/", payload);
+        String endpoint = sendRequestPost("/interface/wifi/security/add", payload);
         return endpoint;
     }
 
@@ -545,13 +556,13 @@ public class ApiClient {
     public String addBridgePort() throws Exception {
 
         AddBridgePort novaBridge = new AddBridgePort();
-        novaBridge.interfaceAtual = "oioi";
-        novaBridge.bridge = "bem vindo";
+        novaBridge.interfaceAtual = "ether5";
+        novaBridge.bridge = "teste";
 
         Gson gson = new Gson();
         String payload = gson.toJson(novaBridge);
 
-        return sendRequestPost("/interface/wifi/security/", payload);
+        return sendRequestPost("/interface/bridge/port/add", payload);
     }
 
     // interfaces
@@ -612,11 +623,44 @@ public class ApiClient {
     }
 
 
+    /// Route
 
+    public List<Routes> getStaticRoute() throws Exception {
+        String endpoint = sendRequestGet("/ip/route");
 
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<Routes>>(){}.getType();
 
+        return gson.fromJson(endpoint, listType);
+    }
 
+    public String addStaticRoute() throws Exception {
 
+        Routes novaRotaEstatica = new Routes();
+        novaRotaEstatica.dst_address = "10.20.30.40./24";
+        novaRotaEstatica.gateway = "10.20.30.41";
+        novaRotaEstatica.routing_table = "main";
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaRotaEstatica);
+
+        return sendRequestPost("/ip/route/add", payload);
+    }
+
+    public Integer deleteRotaEstatica(String id) throws Exception {
+        return sendRequestDelete("/ip/route/" + id);
+    }
+
+    public String StaticRouteState(String id, boolean disabled) throws Exception {
+
+        Routes novoEstado = new Routes();
+        novoEstado.disabled = disabled;
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novoEstado);
+
+        return sendRequestPut("/ip/route/" + id, payload);
+    }
 
 
 

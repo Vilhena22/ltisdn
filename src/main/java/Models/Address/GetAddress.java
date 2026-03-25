@@ -10,8 +10,8 @@ public class GetAddress {
     @SerializedName("actual-interface")
     public String actual_interface;
 
-    @SerializedName("disabled")
-    public boolean running;
+    public boolean disabled;
 
     public String address;
+
 }
