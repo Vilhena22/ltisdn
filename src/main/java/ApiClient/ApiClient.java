@@ -60,8 +60,8 @@ public class ApiClient {
         );
     }
 
-    public String postClearDnsCache() throws Exception {
-        return sendRequestPost("/ip/dns/cache/flush","{}");
+    public void postClearDnsCache() throws Exception {
+        sendRequestPost("/ip/dns/cache/flush", "{}");
     }
 
     //DNS Records
@@ -152,23 +152,16 @@ public class ApiClient {
                 mapper.getTypeFactory().constructCollectionType(List.class, DhcpPool.class));
     }
 
-    public String postDhcpPool() throws Exception {
+    public String postDhcpPool(DhcpPool dhcpPool) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
-        DhcpPool dhcpPool = new DhcpPool();
-        dhcpPool.address ="192.168.100.0/24";
-        dhcpPool.dnsServer = "192.168.100.1";
-        dhcpPool.gateway ="192.168.100.100";
-
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpPool);
-
-
         return sendRequestPost("/ip/dhcp-server/network/add",jsonString);
     }
 
-    public Integer deleteDhcpPool(Integer id) throws Exception {
-        return sendRequestDelete("/ip/dhcp-server/network/*"+ id.toString());
+    public Integer deleteDhcpPool(String id) throws Exception {
+        return sendRequestDelete("/ip/dhcp-server/network/"+ id);
     }
 
         //Leases
@@ -181,15 +174,9 @@ public class ApiClient {
     }
 
 
-    public String postDhcpLease() throws Exception {
+    public String postDhcpLease(DhcpLease dhcpLease) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
-        DhcpLease dhcpLease = new DhcpLease();
-
-        dhcpLease.address ="192.168.100.100";
-        dhcpLease.clientId = "*9";
-        dhcpLease.server ="dhcp1";
-
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpLease);
 
@@ -197,8 +184,8 @@ public class ApiClient {
         return sendRequestPost("/ip/dhcp-server/lease/add",jsonString);
     }
 
-    public Integer deleteDhcpLease(Integer id) throws Exception {
-        return sendRequestDelete("/ip/dhcp-server/lease/*"+ id.toString());
+    public Integer deleteDhcpLease(String id) throws Exception {
+        return sendRequestDelete("/ip/dhcp-server/lease/"+ id);
     }
 
 
@@ -212,25 +199,23 @@ public class ApiClient {
     }
 
 
-    public String postDhcpClients() throws Exception {
+    public String postDhcpClients(DhcpClient dhcpClient) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
-        DhcpClient dhcpClient = new DhcpClient();
-
-        dhcpClient.interfaceName = "wlan2";
-        dhcpClient.addDefaultRoute = "yes";
-        dhcpClient.usePeerDns = "yes";
-        dhcpClient.usePeerNtp = "true";
-
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpClient);
-
-
         return sendRequestPost("/ip/dhcp-client/add",jsonString);
     }
 
+    public String postEditDhcpClient(DhcpClient dhcpClient) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpClient);
+        return sendRequestPost("/ip/dhcp-client/set",jsonString);
+    }
+
     public Integer deleteDhcpClients(String id) throws Exception {
-        return sendRequestDelete("/ip/dhcp-client/*"+ id);
+        return sendRequestDelete("/ip/dhcp-client/"+ id);
     }
 
 
@@ -255,25 +240,16 @@ public class ApiClient {
     }
 
 
-    public String postDhcpServer() throws Exception {
+    public String postDhcpServer(DhcpServer dhcpServer) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
-        DhcpServer dhcpServer = new DhcpServer();
-
-        dhcpServer.addressPool = "dhcp_pool0";
-        dhcpServer.disabled = "true";
-        dhcpServer.interfaceName = "wlan2";
-        dhcpServer.name = "dhcpTeste";
-
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpServer);
-
-
         return sendRequestPost("/ip/dhcp-server/add",jsonString);
     }
 
     public Integer deleteDhcpServer(String id) throws Exception {
-        return sendRequestDelete("/ip/dhcp-server/*"+ id);
+        return sendRequestDelete("/ip/dhcp-server/"+ id);
     }
 
 
