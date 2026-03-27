@@ -2,13 +2,8 @@ package Forms;
 
 import ApiClient.ApiClient;
 import Dialogs.Add.*;
-import Dialogs.Edit.EditDhcpLease;
-import Dialogs.Edit.EditDhcpClient;
-import Dialogs.Edit.EditDhcpNetwork;
-import Dialogs.Edit.EditDhcpServer;
+import Dialogs.Edit.*;
 import Models.Address.GetAddress;
-import Dialogs.*;
-import Dialogs.EditDhcpClient;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
 import Models.Dhcp.Networks.DhcpNetwork;
@@ -110,7 +105,7 @@ public class HomePage {
     public HomePage(Boolean isThemeDark, JFrame owner){
 
         this.owner = owner;
-        createUIComponents();
+        setFonts();
 
         if (isThemeDark) {
             setColors(new Color(60, 63, 65), Color.WHITE);
@@ -122,11 +117,11 @@ public class HomePage {
         comboBoxInterfaces.addActionListener(e -> interfaceTable());
         try {
             setDashboardValues();
-            /*if (isThemeDark) {
+            if (isThemeDark) {
                 buildChart(new Color(60, 63, 65), Color.WHITE);
             }else {
                 buildChart(Color.WHITE, new Color(60, 63, 65));
-            }*/
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -1086,14 +1081,14 @@ public class HomePage {
 
     }
 
-    /*private void buildChart(Color backColor, Color textColor) throws Exception{
+    private void buildChart(Color backColor, Color textColor) throws Exception{
 
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        for ( getAllInterfaces interf : apiClient.getAllInterfaces()) {
+        /*for ( getAllInterfaces interf : apiClient.getAllInterfaces()) {
             dataset.addValue(interf.rxDrop, "RX Drop", );
             dataset.addValue(interf.txDrop, "TX Drop", client.getDefaultRouteDistance());
-        }
+        }*/
         JFreeChart barChart = ChartFactory.createBarChart(
                 "",
                 "Interface",
@@ -1114,9 +1109,9 @@ public class HomePage {
         statsPanel.setLayout(new BorderLayout());
         statsPanel.add(chartPanel, BorderLayout.CENTER);
         statsPanel.validate(); // força o layout a atualizar
-    }*/
+    }
 
-    private void createUIComponents(){
+    private void setFonts(){
         Font font = new Font("JetBrains Mono", Font.PLAIN,14);
         //MainPanel
         navBar.setFont(font);
