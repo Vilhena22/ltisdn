@@ -15,8 +15,8 @@ import Models.Interfaces.bridge.interfaces.getInterfaceBridge;
 import Models.Interfaces.bridge.ports.AddBridgePort;
 import Models.Interfaces.bridge.ports.GetPorts;
 import Models.Interfaces.getAllInterfaces;
-import Models.Interfaces.wifi.interfaces.AddInterface;
-import Models.Interfaces.wifi.interfaces.GetInterfaces;
+import Models.Interfaces.wifi.interfaces.AddInterfaceWiFi;
+import Models.Interfaces.wifi.interfaces.GetInterfacesWiFi;
 import Models.Interfaces.wifi.securityProfiles.AddProfile;
 import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.Route.Routes;
@@ -400,42 +400,36 @@ public class ApiClient {
     /// ADDRESSES
 
     //GET: vai buscar todos os ips
-    public String GetAddress() throws Exception {
+    public List<GetAddress> GetAddress() throws Exception {
         String endpoint = sendRequestGet("/ip/address");
 
         Gson gson = new Gson();
         Type listType = new TypeToken<List<GetAddress>>(){}.getType();
-        List<GetAddress> addresses = gson.fromJson(endpoint, listType);
+        return gson.fromJson(endpoint, listType);
 
-        // aceder aos dados
-        for (GetAddress address : addresses) {
-            System.out.println("id: " + address.id + "\nactual-interface: " + address.actual_interface + "\nip: " + address.address + "\ndisabled: " + address.disabled + "\n");
-        }
-        return endpoint;
     }
 
     //POST: atualizar um ip
     public String UpdateAddress(String id, String newAddress) throws Exception {
 
         UpdateAddress novoIP = new UpdateAddress();
-        novoIP.id = "*A";
-        novoIP.address = "10.30.40.50/24";
+        novoIP.id = id;
+        novoIP.address = newAddress;
 
 
         //converter objeto para json
         Gson gson = new Gson();
         String payload = gson.toJson(novoIP);
 
-        String endpoint = sendRequestPost("/ip/address/set", payload);
-        return endpoint;
+        return sendRequestPost("/ip/address/set", payload);
     }
 
     //POST: adicionar um address
-    public String AddAddress() throws Exception {
+    public String AddAddress(String interf, String ip) throws Exception {
 
         AddAddress newAddr = new AddAddress();
-        newAddr.address = "20.30.40.55";
-        newAddr.interf = "bridge2";
+        newAddr.address = ip;
+        newAddr.interf = interf;
 
         Gson gson = new Gson();
         String payload = gson.toJson(newAddr);
@@ -457,9 +451,10 @@ public class ApiClient {
     //POST: desativar/ativar ip
     public String EstadoIPAddress(String id, boolean disabled) throws Exception{
 
+        boolean newState = !disabled;
         // cria o JSON que a Mikrotik espera
         String payload = "{ \".id\": \"" + id +"\",\n" +
-                         "\"disabled\": " + disabled + "}";
+                         "\"disabled\": " + newState + "}";
 
         //envia o post com os novos dados
         String endpoint = sendRequestPost("/ip/address/set", payload);
@@ -472,16 +467,16 @@ public class ApiClient {
     //WiFi
     //Interfaces
 
-    public String AddInterfaceWifi() throws Exception {
+    public String AddInterfaceWiFi(String name, String master, String mode, String ssid, String band, String channel, boolean dis) throws Exception {
 
-        AddInterface novaInterface = new AddInterface();
-        novaInterface.name = "wlan1023";
-        novaInterface.master_interface = "wlan1";
-        novaInterface.mode = "ap-bridge";
-        novaInterface.ssid = "Rede_PublicaTESTE";
-        novaInterface.band = "2ghz-b/g/n";
-        novaInterface.channel_width = "20mhz";
-        novaInterface.disabled = true;
+        AddInterfaceWiFi novaInterface = new AddInterfaceWiFi();
+        novaInterface.name = name;
+        novaInterface.master_interface = master;
+        novaInterface.mode = mode;
+        novaInterface.ssid = ssid;
+        novaInterface.band = band;
+        novaInterface.channel_width = channel;
+        novaInterface.disabled = dis;
 
         //converter objeto para json
         Gson gson = new Gson();
@@ -492,17 +487,17 @@ public class ApiClient {
         return endpoint;
     }
 
-    public List<GetInterfaces> GetInterfacesWifi() throws Exception {
+    public List<GetInterfacesWiFi> GetInterfacesWiFi() throws Exception {
         String endpoint = sendRequestGet("/interface/wireless");
 
         //converte json em objeto
         Gson gson = new Gson();
-        Type listType = new TypeToken<List<GetInterfaces>>(){}.getType();
+        Type listType = new TypeToken<List<GetInterfacesWiFi>>(){}.getType();
 
         return gson.fromJson(endpoint, listType);
     }
 
-    public Integer DeleteInterfaceWifi(String id) throws Exception {
+    public Integer DeleteInterfaceWiFi(String id) throws Exception {
         return sendRequestDelete("/interface/wifi/"+id);
     }
 
@@ -581,11 +576,11 @@ public class ApiClient {
         return sendRequestDelete("/interface/bridge/" + id);
     }
 
-    public String addInterfaceBridge() throws Exception {
+    public String addInterfaceBridge(String name, boolean disabled) throws Exception {
 
         addNewInterfaceBridge novaInterfaceBridge = new addNewInterfaceBridge();
-        novaInterfaceBridge.name = "oioi";
-        novaInterfaceBridge.disabled = true;
+        novaInterfaceBridge.name = name;
+        novaInterfaceBridge.disabled = disabled;
 
         Gson gson = new Gson();
         String payload = gson.toJson(novaInterfaceBridge);
@@ -610,16 +605,12 @@ public class ApiClient {
     }
 
     public String estadoInterface(String id, boolean state) throws Exception {
-        //troca o estado da interface
-        boolean NovoEstado = !state;
+        boolean novoEstado = !state;
+        String payload = "{ \".id\": \"" + id +"\",\n" +
+                "\"disabled\": " + novoEstado + "}";
 
-        // cria o JSON que a Mikrotik espera
-        String payload = "{disabled: " + NovoEstado + "}";
-
-        //envia o post com os novos dados
-        String endpoint = sendRequestPost("/interface/" + id, payload);
-
-        return endpoint;
+        String response = sendRequestPost("/interface/set", payload);
+        return response;
     }
 
 
