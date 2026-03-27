@@ -74,6 +74,18 @@ public class ApiClient {
         );
     }
 
+
+    public String postEditDnsRecord(DnsRecord dnsRecord) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        //Converte o objeto em Json
+        String jsonString = mapper.writeValueAsString(dnsRecord);
+        //Realiza o post
+        return sendRequestPost("/ip/dns/static/set",  jsonString);
+    }
+
     public String postDnsRecord(DnsRecord dnsRecord) throws Exception {
 
         //Cria o objeto para enviar
@@ -649,57 +661,6 @@ public class ApiClient {
 
         return sendRequestPut("/ip/route/" + id, payload);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }
