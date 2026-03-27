@@ -500,18 +500,17 @@ public class ApiClient {
 
     // Security Profiles
 
-    public String AddProfile() throws Exception {
+    public String AddProfile(String name, boolean dis) throws Exception {
 
         AddProfile novoProfile = new AddProfile();
-        novoProfile.name = "wlan1023";
-        novoProfile.disabled = true;
+        novoProfile.name = name;
+        novoProfile.disabled = dis;
 
         //converter objeto para json
         Gson gson = new Gson();
         String payload = gson.toJson(novoProfile);
 
-        String endpoint = sendRequestPost("/interface/wifi/security/add", payload);
-        return endpoint;
+        return sendRequestPost("/interface/wifi/security/add", payload);
     }
 
     public List<GetProfiles> GetProfiles() throws Exception {
@@ -545,16 +544,25 @@ public class ApiClient {
         return sendRequestDelete("/interface/bridge/port/" + id);
     }
 
-    public String addBridgePort() throws Exception {
+    public String addBridgePort(String bridgeName, String interfaceName) throws Exception {
 
         AddBridgePort novaBridge = new AddBridgePort();
-        novaBridge.interfaceAtual = "ether5";
-        novaBridge.bridge = "teste";
+        novaBridge.interfaceAtual = interfaceName;
+        novaBridge.bridge = bridgeName;
 
         Gson gson = new Gson();
         String payload = gson.toJson(novaBridge);
 
         return sendRequestPost("/interface/bridge/port/add", payload);
+    }
+
+    public String bridgePortState(String id, boolean state) throws Exception {
+        boolean novoEstado = !state;
+        String payload = "{ \".id\": \"" + id +"\",\n" +
+                "\"disabled\": " + novoEstado + "}";
+
+        String response = sendRequestPost("/interface/bridge/port/set", payload);
+        return response;
     }
 
     // interfaces
@@ -597,8 +605,8 @@ public class ApiClient {
         return gson.fromJson(endpoint, listType);
     }
 
-    public Integer deleteInterface(String id) throws Exception {
-        return sendRequestDelete("/interface/" + id);
+    public Integer deleteInterface(String endpoint) throws Exception {
+        return sendRequestDelete(endpoint);
     }
 
     public String estadoInterface(String id, boolean state) throws Exception {

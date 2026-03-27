@@ -7,18 +7,20 @@ public class GetInterfacesWiFi {
     @SerializedName(".id")
     public String id;
 
-    public String arp;
+    public String name;
+
+    @SerializedName("master-interface")
+    public String master_interface;
+
+    public String mode;
+
+    public String ssid;
 
     public String band;
-
-    @SerializedName("bridge-mode")
-    public String bridge_mode;
 
     @SerializedName("channel-width")
     public String channel_width;
 
     public boolean disabled;
 
-    @SerializedName("mac-address")
-    public String mac_address;
 }

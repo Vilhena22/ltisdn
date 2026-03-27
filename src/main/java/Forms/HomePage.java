@@ -11,8 +11,11 @@ import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
 import Models.Interfaces.bridge.interfaces.getInterfaceBridge;
+import Models.Interfaces.bridge.ports.GetPorts;
 import Models.Interfaces.getAllInterfaces;
 import Models.Interfaces.wifi.interfaces.GetInterfacesWiFi;
+import Models.Interfaces.wifi.securityProfiles.AddProfile;
+import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.System.SystemResources;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -89,7 +92,7 @@ public class HomePage {
     private JTable interfaceTable;
     private JComboBox comboBoxInterfaces;
     private JButton addInterfaceButton;
-    private JTabbedPane tabbedPaneGeral;
+    private JTabbedPane tabbedPaneWiFi;
     private JTable tableInterfacesWiFi;
     private JTable tableSP;
     private JScrollPane interfacesAllPanel;
@@ -98,6 +101,14 @@ public class HomePage {
     private JButton addClientButton;
     private JButton addServerButton;
     private JButton editButton;
+    private JPanel routePanel;
+    private JButton deleteStaticRouteButton;
+    private JButton addStaticRouteButton;
+    private JButton ableDisableStaticRouteButton;
+    private JTable tableRoute;
+    private JTabbedPane tabbedPaneBridge;
+    private JTable tableInterfacesBridge;
+    private JTable tablePortsBridge;
     private final ApiClient apiClient;
 
 
@@ -107,14 +118,9 @@ public class HomePage {
         this.owner = owner;
         setFonts();
 
-        if (isThemeDark) {
-            setColors(new Color(60, 63, 65), Color.WHITE);
-        }else {
-            setColors(Color.WHITE, new Color(60, 63, 65));
-        }
         this.apiClient = new ApiClient();
-
         comboBoxInterfaces.addActionListener(e -> interfaceTable());
+
         try {
             setDashboardValues();
             if (isThemeDark) {
@@ -125,8 +131,6 @@ public class HomePage {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-
 
         homeButton.addActionListener(this::btnHomeButton);
         dnsButton.addActionListener(this::btnDnsButton);
@@ -149,23 +153,51 @@ public class HomePage {
         addLeaseButton.addActionListener(this::btnAddLease);
         addClientButton.addActionListener(this::btnAddClient);
         addServerButton.addActionListener(this::btnAddServer);
+
+        tabbedPaneWiFi.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                interfaceTable();
+            }
+        });
+        tabbedPaneBridge.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                interfaceTable();
+            }
+        });
+
     }
 
     private void btnAddInterface(ActionEvent actionEvent) {
          String selected = (String) comboBoxInterfaces.getSelectedItem();
-         if (selected.compareTo("All interfaces") == 0) {
-             JOptionPane.showMessageDialog(null, "Must be 'WiFi' or 'Bridge'!", "Erro", JOptionPane.ERROR_MESSAGE);
-         }else {
-             if (selected.compareTo("Wi-Fi") == 0){
+         if (selected.compareTo("Wi-Fi") == 0){
+             if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
                  addInterfaceWiFi novaInterfaceWiFi = new addInterfaceWiFi();
                  novaInterfaceWiFi.pack();
                  novaInterfaceWiFi.setLocationRelativeTo(owner);
                  novaInterfaceWiFi.setVisible(true);
-             }else {
+             }
+             if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Security Profiles") == 0){
+                 addWiFiSP novoPerfil = new addWiFiSP();
+                 novoPerfil.pack();
+                 novoPerfil.setLocationRelativeTo(owner);
+                 novoPerfil.setVisible(true);
+             }
+         }else {
+             if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Interfaces") == 0){
                  addInterfaceBridge novaInterfaceBridge = new addInterfaceBridge();
                  novaInterfaceBridge.pack();
                  novaInterfaceBridge.setLocationRelativeTo(owner);
                  novaInterfaceBridge.setVisible(true);
+             }
+             if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Ports") == 0){
+                 addBridgePort newPort = new addBridgePort();
+                 newPort.pack();
+                 newPort.setLocationRelativeTo(owner);
+                 newPort.setVisible(true);
              }
          }
          interfaceTable();
@@ -174,53 +206,85 @@ public class HomePage {
     private void btnDeleteInterface(ActionEvent actionEvent) {
 
         String comboBoxValue = (String) comboBoxInterfaces.getSelectedItem();
-        int selected = interfaceTable.getSelectedRow();
-        String id = interfaceTable.getValueAt(selected, 0).toString();
+        int selected;
+        String id = "";
+        String endpoint = "";
 
         switch (comboBoxValue) {
-            case "All interfaces":
-                try {
-                    apiClient.deleteInterface(id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                interfaceTable();
-                break;
-
             case "Wi-Fi":
-                try {
-                    apiClient.DeleteInterfaceWiFi(id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (tabbedPaneWiFi.getSelectedIndex() == 0) {
+                    selected = tableInterfacesWiFi.getSelectedRow();
+                    id = tableInterfacesWiFi.getValueAt(selected, 0).toString();
+                    endpoint = "/interface/wifi/" + id;
+                }else{
+                    selected = tableSP.getSelectedRow();
+                    id = tableSP.getValueAt(selected, 0).toString();
+                    endpoint = "/interface/wifi/security/" + id;
                 }
-                interfaceTable();
                 break;
-
             case "Bridge":
-                try {
-                    apiClient.deleteInterfaceBridge(id);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                if (tabbedPaneBridge.getSelectedIndex() == 0) {
+                    selected = tableInterfacesBridge.getSelectedRow();
+                    id = tableInterfacesBridge.getValueAt(selected, 0).toString();
+                    endpoint = "/interface/bridge/" + id;
+                }else {
+                    selected = tablePortsBridge.getSelectedRow();
+                    id = tablePortsBridge.getValueAt(selected, 0).toString();
+                    endpoint = "/interface/bridge/port/" + id;
                 }
-                interfaceTable();
                 break;
         }
+        try {
+            apiClient.deleteInterface(id);
+            System.out.println(apiClient.deleteInterface(endpoint));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        interfaceTable();
     }
 
     private void btnAbleDisableInterface(ActionEvent actionEvent) {
-        int selectedRow = interfaceTable.getSelectedRow();
-        int lastCol = interfaceTable.getColumnCount() -1;
+        int selectedRow;
+        int lastCol;
 
-        if (comboBoxInterfaces.getSelectedItem().toString().equals("Wi-Fi")) {
-            if (tabbedPaneGeral.getTitleAt(tabbedPaneGeral.getSelectedIndex()).compareTo("Security Profiles") == 0) {
-                ableDisableInterfaceButton.setEnabled(false);
-            }
-        }
-
-        try {
-            apiClient.estadoInterface(interfaceTable.getValueAt(selectedRow, 0).toString(), (Boolean) interfaceTable.getValueAt(selectedRow, lastCol));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        switch ((String) comboBoxInterfaces.getSelectedItem()) {
+            case "All interfaces":
+                selectedRow = interfaceTable.getSelectedRow();
+                lastCol = interfaceTable.getColumnCount() - 1;
+                try {
+                    apiClient.estadoInterface(interfaceTable.getValueAt(selectedRow, 0).toString(), (Boolean) interfaceTable.getValueAt(selectedRow, lastCol));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case "Wi-Fi":
+                selectedRow = tableInterfacesWiFi.getSelectedRow();
+                lastCol = tableInterfacesWiFi.getColumnCount() - 1;
+                try {
+                    apiClient.estadoInterface(tableInterfacesWiFi.getValueAt(selectedRow, 0).toString(), (Boolean) tableInterfacesWiFi.getValueAt(selectedRow, lastCol));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case "Bridge":
+                if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Interfaces") == 0) {
+                    selectedRow = tableInterfacesBridge.getSelectedRow();
+                    lastCol = tableInterfacesBridge.getColumnCount() - 1;
+                    try {
+                        apiClient.estadoInterface(tableInterfacesBridge.getValueAt(selectedRow, 0).toString(), (Boolean) tableInterfacesBridge.getValueAt(selectedRow, lastCol));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }else {
+                    selectedRow = tablePortsBridge.getSelectedRow();
+                    lastCol = tablePortsBridge.getColumnCount() - 1;
+                    try {
+                        apiClient.bridgePortState(tablePortsBridge.getValueAt(selectedRow, 0).toString(), (Boolean) tablePortsBridge.getValueAt(selectedRow, lastCol));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                break;
         }
         interfaceTable();
     }
@@ -231,6 +295,7 @@ public class HomePage {
         dnsPanel.setVisible(false);
         cpuPanel.setVisible(false);
         statsPanel.setVisible(false);
+        routePanel.setVisible(false);
 
         interfaceTable();
     }
@@ -242,6 +307,11 @@ public class HomePage {
 
         switch (comboBoxValue) {
             case "All interfaces":
+                addInterfaceButton.setEnabled(false);
+                deleteInterfaceButton.setEnabled(false);
+                interfacesAllPanel.setVisible(true);
+                tabbedPaneWiFi.setVisible(false);
+                tabbedPaneBridge.setVisible(false);
                 try {
                     String[] colsAll = {"ID", "Name", "Running", "Disabled"};
                     model = new DefaultTableModel(colsAll, 0);
@@ -254,6 +324,8 @@ public class HomePage {
                         };
                         model.addRow(row);
                     }
+                    tabbedPaneWiFi.setVisible(false);
+                    tabbedPaneBridge.setVisible(false);
                     formatTable(interfaceTable, model);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -262,44 +334,95 @@ public class HomePage {
 
             case "Wi-Fi":
                 interfacesAllPanel.setVisible(false);
-                try {
-                    String[] colsWiFi = {"ID", "Band", "ARP", "MAC Address", "Bridge Mode", "Channel Width", "Disabled"};
-                    model = new DefaultTableModel(colsWiFi, 0); // ← colunas próprias para WiFi
-                    for (GetInterfacesWiFi interf : apiClient.GetInterfacesWiFi()) {
-                        Object[] row = {
-                                interf.id,
-                                interf.band,
-                                interf.arp,
-                                interf.mac_address,
-                                interf.bridge_mode,
-                                interf.channel_width,
-                                interf.disabled
-                        };
-                        model.addRow(row);
+                addInterfaceButton.setEnabled(true);
+                deleteInterfaceButton.setEnabled(true);
+                if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
+                    try {
+                        String[] colsWiFi = {"ID", "Name", "Master Interface", "Mode", "SSID", "Band", "Channel Width", "Disabled"};
+                        model = new DefaultTableModel(colsWiFi, 0); // ← colunas próprias para WiFi
+                        for (GetInterfacesWiFi interf : apiClient.GetInterfacesWiFi()) {
+                            Object[] row = {
+                                    interf.id,
+                                    interf.name,
+                                    interf.master_interface,
+                                    interf.mode,
+                                    interf.ssid,
+                                    interf.band,
+                                    interf.channel_width,
+                                    interf.disabled
+                            };
+                            model.addRow(row);
+                        }
+                        tabbedPaneWiFi.setVisible(true);
+                        tabbedPaneBridge.setVisible(false);
+                        formatTable(tableInterfacesWiFi, model);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
-                    tabbedPaneGeral.setVisible(true);
-                    formatTable(tableInterfacesWiFi, model);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                }else {
+                    try {
+                        String[] colsWiFi = {"ID", "Name", "Disabled"};
+                        model = new DefaultTableModel(colsWiFi, 0); // ← colunas próprias para WiFi
+                        for (GetProfiles interf : apiClient.GetProfiles()) {
+                            Object[] row = {
+                                    interf.id,
+                                    interf.name,
+                                    interf.disabled
+                            };
+                            model.addRow(row);
+                        }
+                        tabbedPaneWiFi.setVisible(true);
+                        tabbedPaneBridge.setVisible(false);
+                        formatTable(tableSP, model);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 break;
 
             case "Bridge":
-                try {
-                    String[] colsBridge = {"ID", "Name", "Running", "Disabled"};
-                    model = new DefaultTableModel(colsBridge, 0);
-                    for (getInterfaceBridge interf : apiClient.getBridgeInterfaces()) {
-                        Object[] row = {
-                                interf.id,
-                                interf.name,
-                                interf.running,
-                                interf.disabled
-                        };
-                        model.addRow(row);
+                interfacesAllPanel.setVisible(false);
+                addInterfaceButton.setEnabled(true);
+                deleteInterfaceButton.setEnabled(true);
+                if (tabbedPaneBridge.getSelectedIndex() == 0) {
+                    try {
+                        String[] colsBridge = {"ID", "Name", "Running", "Disabled"};
+                        model = new DefaultTableModel(colsBridge, 0);
+                        for (getInterfaceBridge interf : apiClient.getBridgeInterfaces()) {
+                            Object[] row = {
+                                    interf.id,
+                                    interf.name,
+                                    interf.running,
+                                    interf.disabled
+                            };
+                            model.addRow(row);
+                        }
+                        tabbedPaneBridge.setVisible(true);
+                        tabbedPaneWiFi.setVisible(false);
+                        formatTable(tableInterfacesBridge, model);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
-                    formatTable(interfaceTable, model);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                }else {
+                    try {
+                        String[] colsWiFi = {"ID", "Bridge", "Actual Interface", "Status", "Disabled"};
+                        model = new DefaultTableModel(colsWiFi, 0); // ← colunas próprias para WiFi
+                        for (GetPorts interf : apiClient.getBridgePorts()) {
+                            Object[] row = {
+                                    interf.id,
+                                    interf.bridge,
+                                    interf.interfaceAtual,
+                                    interf.status,
+                                    interf.disabled
+                            };
+                            model.addRow(row);
+                        }
+                        tabbedPaneBridge.setVisible(true);
+                        tabbedPaneWiFi.setVisible(false);
+                        formatTable(tablePortsBridge, model);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 break;
         }
@@ -1009,7 +1132,7 @@ public class HomePage {
 
         dhcpPanel.setVisible(false);
 
-        tabbedPaneGeral.setVisible(false);
+        tabbedPaneWiFi.setVisible(false);
 
         addClientButton.setBackground(buttonColor);
         addClientButton.setForeground(textColor);
