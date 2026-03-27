@@ -2,7 +2,7 @@ package Models.Interfaces.wifi.interfaces;
 
 import com.google.gson.annotations.SerializedName;
 
-public class AddInterface {
+public class AddInterfaceWiFi {
 
     public String name;
 
