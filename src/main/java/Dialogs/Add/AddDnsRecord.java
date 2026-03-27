@@ -1,4 +1,4 @@
-package Dialogs;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 import Models.Dns.DnsRecord;

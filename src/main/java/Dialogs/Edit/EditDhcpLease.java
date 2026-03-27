@@ -1,4 +1,4 @@
-package Dialogs;
+package Dialogs.Edit;
 
 import ApiClient.ApiClient;
 import Models.Dhcp.Leases.DhcpLease;
@@ -20,15 +20,16 @@ public class EditDhcpLease extends JDialog {
     private JLabel serverLabel;
     private JLabel clientLabel;
     private JLabel addressLabel;
+    private final String id;
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
     );
     private final Pattern ID_PATTERN = Pattern.compile(
-            "^*[a-zA-Z0-9]+$"
+            "^\\*((\\d{1,2})|([a-zA-Z]))$"
     );
 
-    public EditDhcpLease(Frame owner, String address, String clientID, String selectedServer) {
+    public EditDhcpLease(Frame owner,String id, String address, String clientID, String selectedServer) {
         super(owner,"Edit DHCP Lease",true);
         setContentPane(contentPane);
         SwingUtilities.updateComponentTreeUI(owner);
@@ -44,17 +45,9 @@ public class EditDhcpLease extends JDialog {
         clientLabel.setFont(font);
         addressLabel.setFont(font);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -65,11 +58,7 @@ public class EditDhcpLease extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         //Preenche os valores da combobox com os servidores de DHCP existentes
         try {
@@ -84,6 +73,7 @@ public class EditDhcpLease extends JDialog {
         addressFormattedText.setText(address);
         clientFormattedText.setText(clientID);
         serverComboBox.setSelectedItem(selectedServer);
+        this.id = id;
 
     }
 
@@ -105,10 +95,11 @@ public class EditDhcpLease extends JDialog {
         if (isValidID() && isValidAddress()) {
             try {
                 DhcpLease dhcpLease = new DhcpLease();
+                dhcpLease.id = id;
                 dhcpLease.address = addressFormattedText.getText();
                 dhcpLease.server = Objects.requireNonNull(serverComboBox.getSelectedItem()).toString();
                 dhcpLease.clientId = clientFormattedText.getText();
-                new ApiClient().postDhcpLease(dhcpLease);
+                new ApiClient().postEditDhcpLease(dhcpLease);
 
             } catch (Exception e) {
                 throw new RuntimeException(e);

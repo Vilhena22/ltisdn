@@ -12,4 +12,16 @@ public class getAllInterfaces {
     public String running;
 
     public boolean disabled;
+    @SerializedName("tx-byte")
+    public long txByte;
+    @SerializedName("tx-queue-drop")
+    public long txQueueDrop;
+
+    @SerializedName("tx-drop")
+    public long txDrop;
+    @SerializedName("rx-byte")
+    public long rxByte;
+    @SerializedName("rx-drop")
+    public long rxDrop;
+
 }

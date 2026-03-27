@@ -1,4 +1,4 @@
-package Dialogs;
+package Dialogs.Edit;
 
 import ApiClient.ApiClient;
 import Models.Dhcp.Clients.DhcpClient;
@@ -25,10 +25,10 @@ public class EditDhcpClient extends JDialog {
     private JLabel routeLabel;
     private JLabel dnsLabel;
     private JLabel ntpLabel;
-    private ButtonGroup defaultRouteBG;
-    private ButtonGroup dnsBG;
-    private ButtonGroup ntpBG;
-    private String interfaceID;
+    private final ButtonGroup defaultRouteBG;
+    private final ButtonGroup dnsBG;
+    private final ButtonGroup ntpBG;
+    private final String interfaceID;
 
 
     public EditDhcpClient(Frame owner,String interfaceID , String inter,String defaultRoute, String dns, String ntp, String disabled) {
@@ -77,17 +77,9 @@ public class EditDhcpClient extends JDialog {
 
 
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -98,11 +90,7 @@ public class EditDhcpClient extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         try {
             for (getAllInterfaces intef : new ApiClient().getAllInterfaces()){

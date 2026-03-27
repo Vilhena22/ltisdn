@@ -1,14 +1,14 @@
-package Dialogs;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
-import Models.Dhcp.Pools.DhcpPool;
+import Models.Dhcp.Networks.DhcpNetwork;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.regex.Pattern;
 
-public class AddDhcpPool extends JDialog {
+public class AddDhcpNetwork extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -28,8 +28,8 @@ public class AddDhcpPool extends JDialog {
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)/(3[0-2]|[12]?\\d)$"
     );
 
-    public AddDhcpPool(Frame owner) {
-        super(owner,"Add DHCP Pool",true);
+    public AddDhcpNetwork(Frame owner) {
+        super(owner,"Add DHCP Network",true);
         setContentPane(contentPane);
         SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
@@ -90,11 +90,11 @@ public class AddDhcpPool extends JDialog {
         if (isValidDns() && isValidGateway() && isValidNetwork()) {
             // tudo válido
             try {
-                DhcpPool pool = new DhcpPool();
-                pool.address = addressFormattedText.getText();
-                pool.dnsServer = dnsFormattedText.getText();
-                pool.gateway = gatewayFormattedText.getText();
-                new ApiClient().postDhcpPool(pool);
+                DhcpNetwork network = new DhcpNetwork();
+                network.address = addressFormattedText.getText();
+                network.dnsServer = dnsFormattedText.getText();
+                network.gateway = gatewayFormattedText.getText();
+                System.out.println( new ApiClient().postDhcpNetwork(network));
 
             } catch (Exception e) {
                 throw new RuntimeException(e);

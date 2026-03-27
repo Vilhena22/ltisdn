@@ -1,14 +1,18 @@
 package Forms;
 
 import ApiClient.ApiClient;
-import Dialogs.*;
-import Dialogs.EditDhcpClient;
+import Dialogs.Add.*;
+import Dialogs.Edit.EditDhcpLease;
+import Dialogs.Edit.EditDhcpClient;
+import Dialogs.Edit.EditDhcpNetwork;
+import Dialogs.Edit.EditDhcpServer;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
-import Models.Dhcp.Pools.DhcpPool;
+import Models.Dhcp.Networks.DhcpNetwork;
 import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
+import Models.Interfaces.getAllInterfaces;
 import Models.System.SystemResources;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -67,17 +71,18 @@ public class HomePage {
     private JButton deleteRecord;
     private JPanel dhcpPanel;
     private JTabbedPane tabbedDhcp;
-    private JTable dhcpPoolTable;
+    private JTable dhcpNetworkTable;
     private JTable dhcpClientsTable;
     private JTable dhcpServerTable;
     private JTable dhcpLeasesTable;
     private JButton deleteButton;
-    private JButton addPoolButton;
+    private JButton addNetworkButton;
     private JButton addLeaseButton;
     private JButton addClientButton;
     private JButton addServerButton;
     private JButton editButton;
     private final ApiClient apiClient;
+
 
 
     public HomePage(Boolean isThemeDark, JFrame owner){
@@ -94,11 +99,11 @@ public class HomePage {
 
         try {
             setDashboardValues();
-            if (isThemeDark) {
-                //buildChart(new Color(60, 63, 65), Color.WHITE);
+            /*if (isThemeDark) {
+                buildChart(new Color(60, 63, 65), Color.WHITE);
             }else {
-                //buildChart(Color.WHITE, new Color(60, 63, 65));
-            }
+                buildChart(Color.WHITE, new Color(60, 63, 65));
+            }*/
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -113,9 +118,10 @@ public class HomePage {
         deleteRecord.addActionListener(this::btnDeleteRecord);
         deleteButton.addActionListener(this::btnDeleteButton);
         editButton.addActionListener(this::btnEditButton);
-        addPoolButton.addActionListener(this::btnAddPool);
+        addNetworkButton.addActionListener(this::btnAddPool);
         addLeaseButton.addActionListener(this::btnAddLease);
         addClientButton.addActionListener(this::btnAddClient);
+        addServerButton.addActionListener(this::btnAddServer);
 
 
         //Listner para trocar os botoes consoante a tabela selecionada
@@ -148,32 +154,32 @@ public class HomePage {
                 switch (tabbedDhcp.getSelectedIndex()) {
                     case 0:
                         fillDhcpLeaseTable();
-                        dhcpLeasesTable.clearSelection();
-                        addPoolButton.setVisible(false);
+                        clearTableSelection();
+                        addNetworkButton.setVisible(false);
                         addLeaseButton.setVisible(true);
                         addClientButton.setVisible(false);
                         addServerButton.setVisible(false);
                         break;
                     case 1:
                         fillDhcpServerTable();
-                        dhcpServerTable.clearSelection();
-                        addPoolButton.setVisible(false);
+                        clearTableSelection();
+                        addNetworkButton.setVisible(false);
                         addLeaseButton.setVisible(false);
                         addClientButton.setVisible(false);
                         addServerButton.setVisible(true);
                         break;
                     case 2:
                         fillDhcpClientTable();
-                        dhcpClientsTable.clearSelection();
-                        addPoolButton.setVisible(false);
+                        clearTableSelection();
+                        addNetworkButton.setVisible(false);
                         addLeaseButton.setVisible(false);
                         addClientButton.setVisible(true);
                         addServerButton.setVisible(false);
                         break;
                     case 3:
-                        fillDhcpPoolTable();
-                        dhcpPoolTable.clearSelection();
-                        addPoolButton.setVisible(true);
+                        fillDhcpNetworkTable();
+                        clearTableSelection();
+                        addNetworkButton.setVisible(true);
                         addLeaseButton.setVisible(false);
                         addClientButton.setVisible(false);
                         addServerButton.setVisible(false);
@@ -191,9 +197,9 @@ public class HomePage {
             }
         });
 
-        dhcpPoolTable.getSelectionModel().addListSelectionListener(e -> {
+        dhcpNetworkTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpPoolTable.getSelectedRow() != -1;
+                boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
                 deleteButton.setEnabled(isSelected);
                 editButton.setEnabled(isSelected);
 
@@ -235,25 +241,35 @@ public class HomePage {
 
     }
 
+    private void btnAddServer(ActionEvent actionEvent) {
+        AddDhcpServer dialog = new AddDhcpServer(owner);
+        dialog.pack();
+        dialog.setLocationRelativeTo(owner);
+        dialog.setVisible(true);
+        fillDhcpServerTable();
+    }
+
     private void btnEditButton(ActionEvent actionEvent) {
         int selectedRow;
+        String id;
         switch (tabbedDhcp.getTitleAt(tabbedDhcp.getSelectedIndex()).toLowerCase()) {
             case "leases":
                 selectedRow = dhcpLeasesTable.getSelectedRow();
+                id = dhcpLeasesTable.getValueAt(selectedRow, 0).toString();
                 String address =  dhcpLeasesTable.getValueAt(selectedRow, 1).toString();
                 String clientID =  dhcpLeasesTable.getValueAt(selectedRow, 3).toString();
                 String server =  dhcpLeasesTable.getValueAt(selectedRow, 7).toString();
-                EditDhcpLease dialogLease = new EditDhcpLease(owner,address,clientID,server);
+                EditDhcpLease dialogLease = new EditDhcpLease(owner,id,address,clientID,server);
                 dialogLease.pack();
                 dialogLease.setLocationRelativeTo(owner);
                 dialogLease.setVisible(true);
-                dhcpLeasesTable.clearSelection();
+                clearTableSelection();
                 fillDhcpLeaseTable();
 
                 break;
             case "clients":
                 selectedRow = dhcpClientsTable.getSelectedRow();
-                String id = dhcpClientsTable.getValueAt(selectedRow, 0).toString();
+                id = dhcpClientsTable.getValueAt(selectedRow, 0).toString();
                 String intef =  dhcpClientsTable.getValueAt(selectedRow, 1).toString();
                 String defaultRoute = dhcpClientsTable.getValueAt(selectedRow, 2).toString();
                 String dns =  dhcpClientsTable.getValueAt(selectedRow, 3).toString();
@@ -263,30 +279,34 @@ public class HomePage {
                 dialogClient.pack();
                 dialogClient.setLocationRelativeTo(owner);
                 dialogClient.setVisible(true);
-                dhcpClientsTable.clearSelection();
+                clearTableSelection();
                 fillDhcpClientTable();
                 break;
             case "server":
-                for (int row : dhcpServerTable.getSelectedRows()) {
-                    try {
-                        apiClient.deleteDhcpServer(dhcpServerTable.getValueAt(row, 0).toString());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                dhcpServerTable.clearSelection();
+                selectedRow = dhcpServerTable.getSelectedRow();
+                id = dhcpServerTable.getValueAt(selectedRow, 0).toString();
+                String name =  dhcpServerTable.getValueAt(selectedRow, 1).toString();
+                String interSelected =  dhcpServerTable.getValueAt(selectedRow, 2).toString();
+                disabled =  dhcpServerTable.getValueAt(selectedRow, 4).toString();
+                EditDhcpServer dialogServer = new EditDhcpServer(owner,id,name,interSelected,disabled);
+                dialogServer.pack();
+                dialogServer.setLocationRelativeTo(owner);
+                dialogServer.setVisible(true);
+                clearTableSelection();
                 fillDhcpServerTable();
                 break;
-            case "pools":
-                for (int row : dhcpPoolTable.getSelectedRows()) {
-                    try {
-                        apiClient.deleteDhcpPool(dhcpPoolTable.getValueAt(row, 0).toString());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                dhcpPoolTable.clearSelection();
-                fillDhcpPoolTable();
+            case "networks":
+                selectedRow = dhcpNetworkTable.getSelectedRow();
+                id = dhcpNetworkTable.getValueAt(selectedRow, 0).toString();
+                String network =  dhcpNetworkTable.getValueAt(selectedRow, 1).toString();
+                dns =  dhcpNetworkTable.getValueAt(selectedRow, 2).toString();
+                String gateway =  dhcpNetworkTable.getValueAt(selectedRow, 3).toString();
+                EditDhcpNetwork dialogNetwork = new EditDhcpNetwork(owner,id,network,dns,gateway);
+                dialogNetwork.pack();
+                dialogNetwork.setLocationRelativeTo(owner);
+                dialogNetwork.setVisible(true);
+                clearTableSelection();
+                fillDhcpNetworkTable();
                 break;
         }
     }
@@ -296,6 +316,14 @@ public class HomePage {
         clientDialog.pack();
         clientDialog.setLocationRelativeTo(owner);
         clientDialog.setVisible(true);
+        fillDhcpClientTable();
+    }
+
+    private void clearTableSelection() {
+        dhcpNetworkTable.clearSelection();
+        dhcpServerTable.clearSelection();
+        dhcpClientsTable.clearSelection();
+        dhcpLeasesTable.clearSelection();
     }
 
     private void btnAddLease(ActionEvent actionEvent) {
@@ -307,11 +335,11 @@ public class HomePage {
     }
 
     private void btnAddPool(ActionEvent actionEvent) {
-        AddDhcpPool poolDialog = new AddDhcpPool(owner);
+        AddDhcpNetwork poolDialog = new AddDhcpNetwork(owner);
         poolDialog.pack();
         poolDialog.setLocationRelativeTo(owner);
         poolDialog.setVisible(true);
-        fillDhcpPoolTable();
+        fillDhcpNetworkTable();
 
     }
 
@@ -325,7 +353,7 @@ public class HomePage {
                         throw new RuntimeException(e);
                     }
                 }
-                dhcpLeasesTable.clearSelection();
+                clearTableSelection();
                 fillDhcpLeaseTable();
 
                 break;
@@ -337,7 +365,7 @@ public class HomePage {
                         throw new RuntimeException(e);
                     }
                 }
-                dhcpClientsTable.clearSelection();
+                clearTableSelection();
                 fillDhcpClientTable();
                 break;
             case "server":
@@ -348,19 +376,19 @@ public class HomePage {
                         throw new RuntimeException(e);
                     }
                 }
-                dhcpServerTable.clearSelection();
+                clearTableSelection();
                 fillDhcpServerTable();
                 break;
-            case "pools":
-                for (int row : dhcpPoolTable.getSelectedRows()) {
+            case "networks":
+                for (int row : dhcpNetworkTable.getSelectedRows()) {
                     try {
-                        apiClient.deleteDhcpPool(dhcpPoolTable.getValueAt(row, 0).toString());
+                        apiClient.deleteDhcpNetwork(dhcpNetworkTable.getValueAt(row, 0).toString());
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }
-                dhcpPoolTable.clearSelection();
-                fillDhcpPoolTable();
+                clearTableSelection();
+                fillDhcpNetworkTable();
                 break;
         }
     }
@@ -401,11 +429,12 @@ public class HomePage {
 
     private void fillDhcpServerTable() {
         try {
-            String [] columNames = new String[] {"ID","Interface","Address Pool","Disabled","Dynamic"};
+            String [] columNames = new String[] {"ID","Name","Interface","Address Pool","Disabled","Dynamic"};
             DefaultTableModel model = new DefaultTableModel(columNames, 0);
             for (DhcpServer serverObject : apiClient.getDhcpServer()) {
                 Object[] row = {
                         serverObject.id,
+                        serverObject.name,
                         serverObject.interfaceName,
                         serverObject.addressPool,
                         serverObject.disabled,
@@ -445,26 +474,25 @@ public class HomePage {
         }
     }
 
-    private void fillDhcpPoolTable() {
-        String[] columNames = {"ID","Address","Caps-Manager","Dhcp-Option","Dns-Server","Dynamic", "Gateway","Ntp-Server","Wins-Server" };
+    private void fillDhcpNetworkTable() {
+        String[] columNames = {"ID","Network","Dns-Server", "Gateway","Dynamic","Dhcp-Option","Ntp-Server","Wins-Server" };
         DefaultTableModel model = new DefaultTableModel(columNames, 0);
 
         try {
-            for (DhcpPool dhcpPool : apiClient.getDhcpPools()) {
+            for (DhcpNetwork dhcpNetwork : apiClient.getDhcpNetworks()) {
                 Object[] row = {
-                        dhcpPool.id,
-                        dhcpPool.address,
-                        dhcpPool.capsManager,
-                        dhcpPool.dhcpOption,
-                        dhcpPool.dnsServer,
-                        dhcpPool.dynamic,
-                        dhcpPool.gateway,
-                        dhcpPool.ntpServer,
-                        dhcpPool.winsServer
+                        dhcpNetwork.id,
+                        dhcpNetwork.address,
+                        dhcpNetwork.dnsServer,
+                        dhcpNetwork.gateway,
+                        dhcpNetwork.dynamic,
+                        dhcpNetwork.dhcpOption,
+                        dhcpNetwork.ntpServer,
+                        dhcpNetwork.winsServer,
                 };
                 model.addRow(row);
             }
-            formatTable(dhcpPoolTable, model);
+            formatTable(dhcpNetworkTable, model);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -525,7 +553,7 @@ public class HomePage {
                 };
                 model.addRow(row);
             }
-            formatTable(dhcpPoolTable, model);
+            formatTable(dhcpNetworkTable, model);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -705,8 +733,8 @@ public class HomePage {
         dhcpServerTable.setBackground(backColor);
         dhcpServerTable.setForeground(textColor);
 
-        dhcpPoolTable.setBackground(backColor);
-        dhcpPoolTable.setForeground(textColor);
+        dhcpNetworkTable.setBackground(backColor);
+        dhcpNetworkTable.setForeground(textColor);
 
         dhcpClientsTable.setBackground(backColor);
         dhcpClientsTable.setForeground(textColor);
@@ -717,8 +745,8 @@ public class HomePage {
         addClientButton.setBackground(buttonColor);
         addClientButton.setForeground(textColor);
 
-        addPoolButton.setBackground(buttonColor);
-        addPoolButton.setForeground(textColor);
+        addNetworkButton.setBackground(buttonColor);
+        addNetworkButton.setForeground(textColor);
 
         addServerButton.setBackground(buttonColor);
         addServerButton.setForeground(textColor);
@@ -784,13 +812,13 @@ public class HomePage {
 
     }
 
-    private void buildChart(Color backColor, Color textColor) throws Exception{
+    /*private void buildChart(Color backColor, Color textColor) throws Exception{
 
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        for ( DhcpClient client : apiClient.getDhcpClients()) {
-            dataset.addValue(Double.parseDouble(client.getDefaultRouteDistance()), "RX Drop", client.getDefaultRouteDistance());
-            dataset.addValue(Double.parseDouble(client.getDefaultRouteDistance()), "TX Drop", client.getDefaultRouteDistance());
+        for ( getAllInterfaces interf : apiClient.getAllInterfaces()) {
+            dataset.addValue(interf.rxDrop, "RX Drop", );
+            dataset.addValue(interf.txDrop, "TX Drop", client.getDefaultRouteDistance());
         }
         JFreeChart barChart = ChartFactory.createBarChart(
                 "",
@@ -812,7 +840,7 @@ public class HomePage {
         statsPanel.setLayout(new BorderLayout());
         statsPanel.add(chartPanel, BorderLayout.CENTER);
         statsPanel.validate(); // força o layout a atualizar
-    }
+    }*/
 
     private void createUIComponents(){
         Font font = new Font("JetBrains Mono", Font.PLAIN,14);
@@ -900,13 +928,13 @@ public class HomePage {
 
         dhcpLeasesTable.setFont(font);
         dhcpClientsTable.setFont(font);
-        dhcpPoolTable.setFont(font);
+        dhcpNetworkTable.setFont(font);
         dhcpServerTable.setFont(font);
 
-        addPoolButton.setFont(font);
-        addPoolButton.setFocusPainted(false);
-        addPoolButton.setBorderPainted(false);
-        addPoolButton.setVisible(false);
+        addNetworkButton.setFont(font);
+        addNetworkButton.setFocusPainted(false);
+        addNetworkButton.setBorderPainted(false);
+        addNetworkButton.setVisible(false);
 
         addServerButton.setFont(font);
         addServerButton.setFocusPainted(false);

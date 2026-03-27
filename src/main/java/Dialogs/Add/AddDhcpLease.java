@@ -1,4 +1,4 @@
-package Dialogs;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 import Models.Dhcp.Leases.DhcpLease;
@@ -25,7 +25,7 @@ public class AddDhcpLease extends JDialog {
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
     );
     private final Pattern ID_PATTERN = Pattern.compile(
-            "^*[a-zA-Z0-9]+$"
+            "^\\*((\\d{1,2})|([a-zA-Z]))$"
     );
 
     public AddDhcpLease(Frame owner) {

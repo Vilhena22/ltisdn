@@ -1,27 +1,27 @@
-package Dialogs;
+package Dialogs.Edit;
 
 import ApiClient.ApiClient;
 import Models.Dhcp.Servers.DhcpServer;
+import Models.Interfaces.getAllInterfaces;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Objects;
 
-public class AddDhcpServer extends JDialog {
+public class EditDhcpServer extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextField nameTextField;
     private JComboBox interComboBox;
     private JCheckBox disabledCheckBox;
-    private JComboBox poolComboBox;
     private JLabel interLabel;
-    private JLabel addressLabel;
     private JLabel nameLabel;
+    private String id;
 
-    public AddDhcpServer(Frame owner) {
-        super(owner,"Add Dhcp Server",true);
+    public EditDhcpServer(Frame owner,String id,String name,String interSelected, String disabled) {
+        super(owner,"Edit Dhcp Server",true);
         setContentPane(contentPane);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -31,9 +31,7 @@ public class AddDhcpServer extends JDialog {
         buttonCancel.setFont(font);
         nameTextField.setFont(font);
         interComboBox.setFont(font);
-        poolComboBox.setFont(font);
         disabledCheckBox.setFont(font);
-        addressLabel.setFont(font);
         nameLabel.setFont(font);
         interLabel.setFont(font);
 
@@ -64,17 +62,31 @@ public class AddDhcpServer extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        ApiClient apiClient = new ApiClient();
+        try {
+            for (getAllInterfaces inter :apiClient.getAllInterfaces()) {
+                interComboBox.addItem(inter.name);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        this.id = id;
+        nameTextField.setText(name);
+        interComboBox.setSelectedItem(interSelected);
+        disabledCheckBox.setSelected(Boolean.parseBoolean(disabled));
     }
 
     private void onOK() {
 
         try {
             DhcpServer dhcpServer = new DhcpServer();
+            dhcpServer.id = id;
             dhcpServer.name = nameTextField.getText();
-            dhcpServer.addressPool = Objects.requireNonNull(poolComboBox.getSelectedItem()).toString();
             dhcpServer.interfaceName = Objects.requireNonNull(interComboBox.getSelectedItem()).toString();
             dhcpServer.disabled = String.valueOf(disabledCheckBox.isSelected());
-            new ApiClient().postDhcpServer(dhcpServer);
+            new ApiClient().postEditDhcpServer(dhcpServer);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

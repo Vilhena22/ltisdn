@@ -1,9 +1,9 @@
-package Models.Dhcp.Pools;
+package Models.Dhcp.Networks;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DhcpPool {
+public class DhcpNetwork {
     @JsonProperty(value = ".id")
     public String id;
     public String address;

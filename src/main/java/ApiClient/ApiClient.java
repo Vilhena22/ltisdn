@@ -5,7 +5,7 @@ import Models.Address.GetAddress;
 import Models.Address.UpdateAddress;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
-import Models.Dhcp.Pools.DhcpPool;
+import Models.Dhcp.Networks.DhcpNetwork;
 import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.Dns;
 import Models.Dns.DnsCache;
@@ -144,24 +144,32 @@ public class ApiClient {
 
     //DHCP
         //Pools
-    public List<DhcpPool> getDhcpPools() throws Exception {
+    public List<DhcpNetwork> getDhcpNetworks() throws Exception {
         String json = sendRequestGet("/ip/dhcp-server/network");
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(
                 json,
-                mapper.getTypeFactory().constructCollectionType(List.class, DhcpPool.class));
+                mapper.getTypeFactory().constructCollectionType(List.class, DhcpNetwork.class));
     }
 
-    public String postDhcpPool(DhcpPool dhcpPool) throws Exception {
+    public String postDhcpNetwork(DhcpNetwork dhcpNetwork) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String jsonString = mapper.writeValueAsString(dhcpPool);
+        String jsonString = mapper.writeValueAsString(dhcpNetwork);
         return sendRequestPost("/ip/dhcp-server/network/add",jsonString);
     }
 
-    public Integer deleteDhcpPool(String id) throws Exception {
+    public Integer deleteDhcpNetwork(String id) throws Exception {
         return sendRequestDelete("/ip/dhcp-server/network/"+ id);
+    }
+
+    public String postEditDhcpNetwork(DhcpNetwork dhcpNetwork) throws Exception {
+        //Converte o objeto em Json
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpNetwork);
+        return sendRequestPost("/ip/dhcp-server/network/set",jsonString);
     }
 
         //Leases
@@ -186,6 +194,14 @@ public class ApiClient {
 
     public Integer deleteDhcpLease(String id) throws Exception {
         return sendRequestDelete("/ip/dhcp-server/lease/"+ id);
+    }
+
+    public String postEditDhcpLease(DhcpLease dhcpLease) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpLease);
+        return sendRequestPost("/ip/dhcp-server/lease/set",jsonString);
+
     }
 
 
@@ -252,8 +268,13 @@ public class ApiClient {
         return sendRequestDelete("/ip/dhcp-server/"+ id);
     }
 
-
-
+    public String postEditDhcpServer(DhcpServer dhcpServer) throws Exception {
+        //Converte o objeto em Json
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpServer);
+        return sendRequestPost("/ip/dhcp-server/set",jsonString);
+    }
 
 
     public String postDesActivateServer(String id, Boolean state) throws Exception {
@@ -560,7 +581,7 @@ public class ApiClient {
     public String addInterfaceBridge() throws Exception {
 
         addNewInterfaceBridge novaInterfaceBridge = new addNewInterfaceBridge();
-        novaInterfaceBridge.name = "oioi";
+        novaInterfaceBridge.name = "oi oi";
         novaInterfaceBridge.disabled = true;
 
         Gson gson = new Gson();
@@ -637,56 +658,6 @@ public class ApiClient {
 
         return sendRequestPut("/ip/route/" + id, payload);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
