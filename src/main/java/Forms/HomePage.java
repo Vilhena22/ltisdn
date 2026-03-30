@@ -122,21 +122,28 @@ public class HomePage {
     );
 
 
-
-    public HomePage(Boolean isThemeDark, JFrame owner){
+    public HomePage(Boolean isThemeDark, JFrame owner) {
 
         this.owner = owner;
         setFonts();
 
+        if (isThemeDark) {
+            setColors(new Color(60, 63, 65), Color.WHITE);
+        }else {
+            setColors(Color.WHITE, new Color(60, 63, 65));
+        }
         this.apiClient = new ApiClient();
+
         comboBoxInterfaces.addActionListener(e -> interfaceTable());
 
         try {
             setDashboardValues();
             if (isThemeDark) {
                 buildChart(new Color(60, 63, 65), Color.WHITE);
-            }else {
+                setColors(new Color(60, 63, 65),Color.WHITE);
+            } else {
                 buildChart(Color.WHITE, new Color(60, 63, 65));
+                setColors(Color.WHITE,new Color(60, 63, 65));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -181,119 +188,139 @@ public class HomePage {
             }
         });
 
-    }
+    //Listner para trocar os botoes consoante a tabela selecionada
+        dnsTabbed.addMouseListener(new
 
-
-
-        //Listner para trocar os botoes consoante a tabela selecionada
-        dnsTabbed.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                switch (dnsTabbed.getSelectedIndex()) {
-                    case 0:
-                        fillDnsCacheTable();
-                        addRecordButton.setVisible(false);
-                        deleteRecordButton.setVisible(false);
-                        clearCacheButton.setVisible(true);
-                        editRecordButton.setVisible(false);
-                        break;
-                    case 1:
-                        fillDnsRecordsTable();
-                        addRecordButton.setVisible(true);
-                        deleteRecordButton.setVisible(true);
-                        editRecordButton.setVisible(true);
-                        clearCacheButton.setVisible(false);
-                        break;
-                }
-
+    MouseAdapter() {
+        @Override
+        public void mouseClicked (MouseEvent e){
+            super.mouseClicked(e);
+            switch (dnsTabbed.getSelectedIndex()) {
+                case 0:
+                    fillDnsCacheTable();
+                    addRecordButton.setVisible(false);
+                    deleteRecordButton.setVisible(false);
+                    clearCacheButton.setVisible(true);
+                    editRecordButton.setVisible(false);
+                    break;
+                case 1:
+                    fillDnsRecordsTable();
+                    addRecordButton.setVisible(true);
+                    deleteRecordButton.setVisible(true);
+                    editRecordButton.setVisible(true);
+                    clearCacheButton.setVisible(false);
+                    break;
             }
-        });
 
-        //Listner para trocar os botoes consoante a tabela selecionada
-        tabbedDhcp.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                switch (tabbedDhcp.getSelectedIndex()) {
-                    case 0:
-                        clearTableSelection(TablesTypes.DHCP);
-                        fillDhcpLeaseTable();
-                        addNetworkButton.setVisible(false);
-                        addLeaseButton.setVisible(true);
-                        addClientButton.setVisible(false);
-                        addServerButton.setVisible(false);
-                        break;
-                    case 1:
-                        fillDhcpServerTable();
-                        addNetworkButton.setVisible(false);
-                        addLeaseButton.setVisible(false);
-                        addClientButton.setVisible(false);
-                        addServerButton.setVisible(true);
-                        break;
-                    case 2:
-                        fillDhcpClientTable();
-                        addNetworkButton.setVisible(false);
-                        addLeaseButton.setVisible(false);
-                        addClientButton.setVisible(true);
-                        addServerButton.setVisible(false);
-                        break;
-                    case 3:
-                        fillDhcpNetworkTable();
-                        addNetworkButton.setVisible(true);
-                        addLeaseButton.setVisible(false);
-                        addClientButton.setVisible(false);
-                        addServerButton.setVisible(false);
-                        break;
-                }
+        }
+    });
+
+    //Listner para trocar os botoes consoante a tabela selecionada
+        tabbedDhcp.addMouseListener(new
+
+    MouseAdapter() {
+        @Override
+        public void mouseClicked (MouseEvent e){
+            super.mouseClicked(e);
+            switch (tabbedDhcp.getSelectedIndex()) {
+                case 0:
+                    clearTableSelection(TablesTypes.DHCP);
+                    fillDhcpLeaseTable();
+                    addNetworkButton.setVisible(false);
+                    addLeaseButton.setVisible(true);
+                    addClientButton.setVisible(false);
+                    addServerButton.setVisible(false);
+                    break;
+                case 1:
+                    fillDhcpServerTable();
+                    addNetworkButton.setVisible(false);
+                    addLeaseButton.setVisible(false);
+                    addClientButton.setVisible(false);
+                    addServerButton.setVisible(true);
+                    break;
+                case 2:
+                    fillDhcpClientTable();
+                    addNetworkButton.setVisible(false);
+                    addLeaseButton.setVisible(false);
+                    addClientButton.setVisible(true);
+                    addServerButton.setVisible(false);
+                    break;
+                case 3:
+                    fillDhcpNetworkTable();
+                    addNetworkButton.setVisible(true);
+                    addLeaseButton.setVisible(false);
+                    addClientButton.setVisible(false);
+                    addServerButton.setVisible(false);
+                    break;
             }
-        });
+        }
+    });
 
 
-        //Cria Listneers para quando tiver itens selecionados o botao delete ativa
-        recordsTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = recordsTable.getSelectedRow() != -1;
-                deleteRecordButton.setEnabled(isSelected);
-                editRecordButton.setEnabled(isSelected);
-            }
-        });
+    //Cria Listneers para quando tiver itens selecionados o botao delete ativa
+        recordsTable.getSelectionModel().
 
-        dhcpNetworkTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
-                deleteButton.setEnabled(isSelected);
-                editButton.setEnabled(isSelected);
+    addListSelectionListener(e ->
 
-            }
-        });
+    {
+        if (e.getValueIsAdjusting()) {
+            boolean isSelected = recordsTable.getSelectedRow() != -1;
+            deleteRecordButton.setEnabled(isSelected);
+            editRecordButton.setEnabled(isSelected);
+        }
+    });
 
-        dhcpLeasesTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpLeasesTable.getSelectedRow() != -1;
-                deleteButton.setEnabled(isSelected);
-                editButton.setEnabled(isSelected);
+        dhcpNetworkTable.getSelectionModel().
 
-            }
-        });
+    addListSelectionListener(e ->
 
-        dhcpClientsTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpClientsTable.getSelectedRow() != -1;
-                deleteButton.setEnabled(isSelected);
-                editButton.setEnabled(isSelected);
+    {
+        if (e.getValueIsAdjusting()) {
+            boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
+            deleteButton.setEnabled(isSelected);
+            editButton.setEnabled(isSelected);
 
-            }
-        });
+        }
+    });
 
-        dhcpServerTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpServerTable.getSelectedRow() != -1;
-                deleteButton.setEnabled(isSelected);
-                editButton.setEnabled(isSelected);
+        dhcpLeasesTable.getSelectionModel().
 
-            }
-        });
+    addListSelectionListener(e ->
+
+    {
+        if (e.getValueIsAdjusting()) {
+            boolean isSelected = dhcpLeasesTable.getSelectedRow() != -1;
+            deleteButton.setEnabled(isSelected);
+            editButton.setEnabled(isSelected);
+
+        }
+    });
+
+        dhcpClientsTable.getSelectionModel().
+
+    addListSelectionListener(e ->
+
+    {
+        if (e.getValueIsAdjusting()) {
+            boolean isSelected = dhcpClientsTable.getSelectedRow() != -1;
+            deleteButton.setEnabled(isSelected);
+            editButton.setEnabled(isSelected);
+
+        }
+    });
+
+        dhcpServerTable.getSelectionModel().
+
+    addListSelectionListener(e ->
+
+    {
+        if (e.getValueIsAdjusting()) {
+            boolean isSelected = dhcpServerTable.getSelectedRow() != -1;
+            deleteButton.setEnabled(isSelected);
+            editButton.setEnabled(isSelected);
+
+        }
+    });
 
         statsPanel.setVisible(true);
         cpuPanel.setVisible(true);
@@ -302,14 +329,14 @@ public class HomePage {
         interfacePanel.setVisible(false);
         addrPanel.setVisible(false);
 
-        tabbedPaneGeral.setVisible(false);
+        //tabbedPaneGeral.setVisible(false);
+
+
+}
 
 
 
-    }
-
-
-    private boolean isValidAddress(String text) {
+private boolean isValidAddress(String text) {
         return ADDRESS_PATTERN.matcher(text.trim()).matches();
     }
 
@@ -1059,7 +1086,6 @@ public class HomePage {
         dnsPanel.setVisible(true);
         interfacePanel.setVisible(false);
         addrPanel.setVisible(false);
-        routePanel.setVisible(false);
     }
 
     private void btnShowHomePanel(ActionEvent actionEvent) {
@@ -1070,7 +1096,6 @@ public class HomePage {
             dhcpPanel.setVisible(false);
             interfacePanel.setVisible(false);
             addrPanel.setVisible(false);
-            routePanel.setVisible(false);
             setDashboardValues();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1085,7 +1110,7 @@ public class HomePage {
         statsPanel.setVisible(false);
         dhcpPanel.setVisible(false);
         addrPanel.setVisible(false);
-        routePanel.setVisible(false);
+
         interfaceTable();
     }
 
@@ -1096,7 +1121,6 @@ public class HomePage {
         dhcpPanel.setVisible(true);
         interfacePanel.setVisible(false);
         addrPanel.setVisible(false);
-        routePanel.setVisible(false);
         fillDhcpLeaseTable();
 
     }
