@@ -67,7 +67,7 @@ public class AddDhcpServer extends JDialog {
             DhcpServer dhcpServer = new DhcpServer();
             dhcpServer.name = nameTextField.getText();
             dhcpServer.interfaceName = Objects.requireNonNull(interComboBox.getSelectedItem()).toString();
-            dhcpServer.disabled = String.valueOf(disabledCheckBox.isSelected());
+            dhcpServer.disabled = Boolean.parseBoolean(String.valueOf(disabledCheckBox.isSelected()));
             System.out.println(new ApiClient().postDhcpServer(dhcpServer));
         } catch (Exception e) {
             throw new RuntimeException(e);

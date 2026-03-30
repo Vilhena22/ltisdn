@@ -1,6 +1,7 @@
 package Dialogs.Add;
 
 import ApiClient.ApiClient;
+import Models.ApiResponse;
 import Models.Dhcp.Networks.DhcpNetwork;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ public class AddDhcpNetwork extends JDialog {
     private JLabel netLabel;
     private JLabel dnsLabel;
     private JLabel gatewayLabel;
+    private final Frame owner;
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
@@ -30,6 +32,7 @@ public class AddDhcpNetwork extends JDialog {
 
     public AddDhcpNetwork(Frame owner) {
         super(owner,"Add DHCP Network",true);
+        this.owner = owner;
         setContentPane(contentPane);
         SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
@@ -64,7 +67,7 @@ public class AddDhcpNetwork extends JDialog {
     }
 
     private void onOK() {
-        if (!isValidNetwork()) {
+        if (!isValidNetwork(addressFormattedText.getText())) {
             JOptionPane.showMessageDialog(this,
                     "Invalid Network!\nMust be 0.0.0.0/24",
                     "Error",
@@ -72,7 +75,7 @@ public class AddDhcpNetwork extends JDialog {
             addressFormattedText.setBackground(new Color(241, 0, 0, 25));
         }
 
-        if (!isValidDns()) {
+        if (!isValidDns(dnsFormattedText.getText())) {
             JOptionPane.showMessageDialog(this,
                     "Invalid DNS Server!\nMust be 0.0.0.0",
                     "Error",
@@ -80,26 +83,32 @@ public class AddDhcpNetwork extends JDialog {
             dnsFormattedText.setBackground(new Color(241, 0, 0, 25));
         }
 
-        if (!isValidGateway()) {
+        if (!isValidGateway(gatewayFormattedText.getText())) {
             JOptionPane.showMessageDialog(this,
                     "Invalid Gateway Address!\nMust be 0.0.0.0",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             gatewayFormattedText.setBackground(new Color(241, 0, 0, 25));
         }
-        if (isValidDns() && isValidGateway() && isValidNetwork()) {
+        if (isValidDns(dnsFormattedText.getText()) && isValidGateway(gatewayFormattedText.getText()) && isValidNetwork(addressFormattedText.getText())) {
             // tudo válido
             try {
                 DhcpNetwork network = new DhcpNetwork();
                 network.address = addressFormattedText.getText();
                 network.dnsServer = dnsFormattedText.getText();
                 network.gateway = gatewayFormattedText.getText();
-                System.out.println( new ApiClient().postDhcpNetwork(network));
+                System.out.println();
+                ApiResponse response = new ApiClient().postDhcpNetwork(network);
+                if (response.error >= 400) {
+                    JOptionPane.showMessageDialog(owner,
+                            response.detail,
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
 
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            dispose();
         }
     }
 
@@ -108,19 +117,16 @@ public class AddDhcpNetwork extends JDialog {
         dispose();
     }
 
-    private boolean isValidNetwork() {
-        String text = addressFormattedText.getText().trim();
-        return NETWORK_PATTERN.matcher(text).matches();
+    private boolean isValidNetwork(String text) {
+        return NETWORK_PATTERN.matcher(text.trim()).matches();
     }
 
-    private boolean isValidDns() {
-        String text = dnsFormattedText.getText().trim();
-        return ADDRESS_PATTERN.matcher(text).matches();
+    private boolean isValidDns(String text) {
+        return ADDRESS_PATTERN.matcher(text.trim()).matches();
     }
 
-    private boolean isValidGateway() {
-        String text = gatewayFormattedText.getText().trim();
-        return ADDRESS_PATTERN.matcher(text).matches();
+    private boolean isValidGateway(String text) {
+        return ADDRESS_PATTERN.matcher(text.trim()).matches();
     }
 
 }

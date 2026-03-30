@@ -18,7 +18,7 @@ public class EditDhcpServer extends JDialog {
     private JCheckBox disabledCheckBox;
     private JLabel interLabel;
     private JLabel nameLabel;
-    private String id;
+    private final String id;
 
     public EditDhcpServer(Frame owner,String id,String name,String interSelected, String disabled) {
         super(owner,"Edit Dhcp Server",true);
@@ -36,11 +36,7 @@ public class EditDhcpServer extends JDialog {
         interLabel.setFont(font);
 
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -85,7 +81,7 @@ public class EditDhcpServer extends JDialog {
             dhcpServer.id = id;
             dhcpServer.name = nameTextField.getText();
             dhcpServer.interfaceName = Objects.requireNonNull(interComboBox.getSelectedItem()).toString();
-            dhcpServer.disabled = String.valueOf(disabledCheckBox.isSelected());
+            dhcpServer.disabled = disabledCheckBox.isSelected();
             new ApiClient().postEditDhcpServer(dhcpServer);
         } catch (Exception e) {
             throw new RuntimeException(e);

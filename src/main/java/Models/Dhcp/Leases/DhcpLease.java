@@ -29,7 +29,7 @@ public class DhcpLease {
     @JsonProperty("dhcp-option")
     public String dhcpOption;
 
-    public String disabled;
+    public boolean disabled;
     public String dynamic;
     @JsonProperty("expires-after")
     public String expiresAfter;
@@ -47,83 +47,16 @@ public class DhcpLease {
         return id;
     }
 
-    public String getActiveAddress() {
-        return activeAddress;
-    }
-
-    public String getActiveClientId() {
-        return activeClientId;
-    }
-
-    public String getActiveMacAddress() {
-        return activeMacAddress;
-    }
-
-    public String getActiveServer() {
-        return activeServer;
-    }
-
     public String getAddress() {
         return address;
     }
 
-    public String getAddressLists() {
-        return addressLists;
-    }
-
-    public String getAge() {
-        return age;
-    }
-
-    public String getBlocked() {
-        return blocked;
-    }
-
-    public String getClassId() {
-        return classId;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public String getDhcpOption() {
-        return dhcpOption;
-    }
-
-    public String getDisabled() {
+    public boolean getDisabled() {
         return disabled;
-    }
-
-    public String getDynamic() {
-        return dynamic;
-    }
-
-    public String getExpiresAfter() {
-        return expiresAfter;
-    }
-
-    public String getHostName() {
-        return hostName;
-    }
-
-    public String getLastSeen() {
-        return lastSeen;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public String getRadius() {
-        return radius;
     }
 
     public String getServer() {
         return server;
     }
 
-    public String getStatus() {
-        return status;
-    }
 }

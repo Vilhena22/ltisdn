@@ -116,7 +116,7 @@ public class EditDhcpClient extends JDialog {
             dhcpClient.addDefaultRoute = defaultRouteBG.getSelection().getActionCommand();
             dhcpClient.usePeerNtp= ntpBG.getSelection().getActionCommand();
             dhcpClient.usePeerDns=dnsBG.getSelection().getActionCommand();
-            dhcpClient.disabled = String.valueOf(disabledCheck.isSelected());
+            dhcpClient.disabled = Boolean.parseBoolean(String.valueOf(disabledCheck.isSelected()));
             new ApiClient().postEditDhcpClient(dhcpClient);
         } catch (Exception e) {
             throw new RuntimeException(e);

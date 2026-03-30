@@ -3,6 +3,7 @@ package ApiClient;
 import Models.Address.AddAddress;
 import Models.Address.GetAddress;
 import Models.Address.UpdateAddress;
+import Models.ApiResponse;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
 import Models.Dhcp.Networks.DhcpNetwork;
@@ -21,7 +22,9 @@ import Models.Interfaces.wifi.securityProfiles.AddProfile;
 import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.Route.Routes;
 import Models.System.SystemResources;
+import Models.System.SystemVersion;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.*;
@@ -144,6 +147,15 @@ public class ApiClient {
 
     }
 
+    public List<SystemVersion> getSystemVersion() throws Exception {
+        String json = sendRequestPost("/system/package/update/check-for-updates","{}");
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, SystemVersion.class));
+    }
+
 
     public SystemResources getSystemResources() throws Exception {
         String json = sendRequestGet("/system/resource");
@@ -164,24 +176,64 @@ public class ApiClient {
                 mapper.getTypeFactory().constructCollectionType(List.class, DhcpNetwork.class));
     }
 
-    public String postDhcpNetwork(DhcpNetwork dhcpNetwork) throws Exception {
+    public ApiResponse postDhcpNetwork(DhcpNetwork dhcpNetwork) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpNetwork);
-        return sendRequestPost("/ip/dhcp-server/network/add",jsonString);
+
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-server/network/add",jsonString));
+        ApiResponse response;
+
+        if (node.isArray()) {
+            // Caso sucesso: lista (possivelmente vazia)
+            if (node.isEmpty()) {
+                response = new ApiResponse();
+                response.error = 200;
+                response.message = "OK";
+            } else {
+                // Se vier lista com conteúdo
+                response = mapper.treeToValue(node.get(0), ApiResponse.class);
+            }
+        } else {
+            // Caso erro: objeto
+            response = mapper.treeToValue(node, ApiResponse.class);
+        }
+
+        return response;
     }
 
     public Integer deleteDhcpNetwork(String id) throws Exception {
         return sendRequestDelete("/ip/dhcp-server/network/"+ id);
     }
 
-    public String postEditDhcpNetwork(DhcpNetwork dhcpNetwork) throws Exception {
+    public ApiResponse postEditDhcpNetwork(DhcpNetwork dhcpNetwork) throws Exception {
         //Converte o objeto em Json
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpNetwork);
-        return sendRequestPost("/ip/dhcp-server/network/set",jsonString);
+
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-server/network/set",jsonString));
+
+        ApiResponse response;
+
+        if (node.isArray()) {
+            // Caso sucesso: lista (possivelmente vazia)
+            if (node.isEmpty()) {
+                response = new ApiResponse();
+                response.error = 200;
+                response.message = "OK";
+            } else {
+                // Se vier lista com conteúdo
+                response = mapper.treeToValue(node.get(0), ApiResponse.class);
+            }
+        } else {
+            // Caso erro: objeto
+            response = mapper.treeToValue(node, ApiResponse.class);
+        }
+
+
+        return response;
     }
 
         //Leases
@@ -251,7 +303,7 @@ public class ApiClient {
         ObjectMapper mapper = new ObjectMapper();
         DhcpClient dhcpClient = new DhcpClient();
         dhcpClient.id = "*"+id;
-        dhcpClient.disabled = state.toString();
+        dhcpClient.disabled = Boolean.parseBoolean(state.toString());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpClient);
         return sendRequestPost("/ip/dhcp-client/set",jsonString);
@@ -293,7 +345,7 @@ public class ApiClient {
         ObjectMapper mapper = new ObjectMapper();
         DhcpServer dhcpServer = new DhcpServer();
         dhcpServer.id = "*"+id;
-        dhcpServer.disabled = state.toString();
+        dhcpServer.disabled = Boolean.parseBoolean(state.toString());
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpServer);
         return sendRequestPost("/ip/dhcp-server/set",jsonString);
@@ -466,9 +518,8 @@ public class ApiClient {
                          "\"disabled\": " + newState + "}";
 
         //envia o post com os novos dados
-        String endpoint = sendRequestPost("/ip/address/set", payload);
 
-        return endpoint;
+        return sendRequestPost("/ip/address/set", payload);
     }
 
     /// INTERFACES
@@ -491,9 +542,7 @@ public class ApiClient {
         Gson gson = new Gson();
         String payload = gson.toJson(novaInterface);
 
-        String endpoint = sendRequestPost("/interface/wireless/add", payload);
-
-        return endpoint;
+        return sendRequestPost("/interface/wireless/add", payload);
     }
 
     public List<GetInterfacesWiFi> GetInterfacesWiFi() throws Exception {
@@ -573,8 +622,7 @@ public class ApiClient {
         String payload = "{ \".id\": \"" + id +"\",\n" +
                 "\"disabled\": " + novoEstado + "}";
 
-        String response = sendRequestPost("/interface/bridge/port/set", payload);
-        return response;
+        return sendRequestPost("/interface/bridge/port/set", payload);
     }
 
     // interfaces
@@ -626,8 +674,7 @@ public class ApiClient {
         String payload = "{ \".id\": \"" + id +"\",\n" +
                 "\"disabled\": " + novoEstado + "}";
 
-        String response = sendRequestPost("/interface/set", payload);
-        return response;
+        return sendRequestPost("/interface/set", payload);
     }
 
 

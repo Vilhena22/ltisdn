@@ -22,7 +22,7 @@ public class DhcpClient {
     public String defaultRouteTables;
     @JsonProperty(value = "dhcp-option")
     public String dhcpOption;
-    public String disabled;
+    public boolean disabled;
     public String dynamic;
     @JsonProperty(value = "interface")
     public String interfaceName;
@@ -35,71 +35,11 @@ public class DhcpClient {
     @JsonProperty(value = "use-peer-ntp")
     public String usePeerNtp;
 
-    public String getAbout() {
-        return about;
-    }
-
     public String getId() {
         return id;
     }
 
-    public String getAddDefaultRoute() {
-        return addDefaultRoute;
-    }
-
-    public String getAllowReconfigure() {
-        return allowReconfigure;
-    }
-
-    public String getCheckGateway() {
-        return checkGateway;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public String getDefaultRouteDistance() {
-        return defaultRouteDistance;
-    }
-
-    public String getDefaultRouteTables() {
-        return defaultRouteTables;
-    }
-
-    public String getDhcpOption() {
-        return dhcpOption;
-    }
-
-    public String getDisabled() {
+    public boolean getDisabled() {
         return disabled;
-    }
-
-    public String getDynamic() {
-        return dynamic;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public String getInvalid() {
-        return invalid;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public String getUseBroadcast() {
-        return useBroadcast;
-    }
-
-    public String getUsePeerDns() {
-        return usePeerDns;
-    }
-
-    public String getUsePeerNtp() {
-        return usePeerNtp;
     }
 }

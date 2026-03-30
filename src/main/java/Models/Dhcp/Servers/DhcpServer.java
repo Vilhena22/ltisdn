@@ -11,7 +11,7 @@ public class DhcpServer {
     public String addressLists;
     @JsonProperty(value = "address-pool")
     public String addressPool;
-    public String disabled;
+    public boolean disabled;
     public String dynamic;
     @JsonProperty(value = "interface")
     public String interfaceName;

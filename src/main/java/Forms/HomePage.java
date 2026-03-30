@@ -2,9 +2,7 @@ package Forms;
 
 import ApiClient.ApiClient;
 import Dialogs.Add.*;
-import Dialogs.Edit.*;
 import Models.Address.GetAddress;
-import Models.Address.UpdateAddress;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
 import Models.Dhcp.Networks.DhcpNetwork;
@@ -15,14 +13,19 @@ import Models.Interfaces.bridge.interfaces.getInterfaceBridge;
 import Models.Interfaces.bridge.ports.GetPorts;
 import Models.Interfaces.getAllInterfaces;
 import Models.Interfaces.wifi.interfaces.GetInterfacesWiFi;
-import Models.Interfaces.wifi.securityProfiles.AddProfile;
 import Models.Interfaces.wifi.securityProfiles.GetProfiles;
+import Models.ApiResponse;
 import Models.System.SystemResources;
+import Models.System.SystemVersion;
 import Models.TablesTypes;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
@@ -31,6 +34,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -104,7 +108,7 @@ public class HomePage {
     private JButton addLeaseButton;
     private JButton addClientButton;
     private JButton addServerButton;
-    private JButton editButton;
+    private JToggleButton editDhcpButton;
     private JPanel routePanel;
     private JButton deleteStaticRouteButton;
     private JButton addStaticRouteButton;
@@ -113,7 +117,18 @@ public class HomePage {
     private JTabbedPane tabbedPaneBridge;
     private JTable tableInterfacesBridge;
     private JTable tablePortsBridge;
-    private JButton editRecordButton;
+    private JToggleButton editRecordsToggleButton;
+    private JToggleButton checkUpdateButton;
+    private JPanel updatePanel;
+    private JButton updateButton;
+    private JLabel chanelLabel;
+    private JLabel instaLabel;
+    private JLabel latestLabel;
+    private JLabel statusLabel;
+    private JLabel status;
+    private JLabel latest;
+    private JLabel instaled;
+    private JLabel chanel;
     private final ApiClient apiClient;
 
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
@@ -121,16 +136,20 @@ public class HomePage {
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
     );
 
+    private final Pattern NETWORK_PATTERN = Pattern.compile(
+            "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
+                    "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)/(3[0-2]|[12]?\\d)$"
+    );
+
 
     public HomePage(Boolean isThemeDark, JFrame owner) {
 
         this.owner = owner;
-        setFonts();
 
         if (isThemeDark) {
-            setColors(new Color(60, 63, 65), Color.WHITE);
+            setStyle(new Color(60, 63, 65), Color.WHITE);
         }else {
-            setColors(Color.WHITE, new Color(60, 63, 65));
+            setStyle(Color.WHITE, new Color(60, 63, 65));
         }
         this.apiClient = new ApiClient();
 
@@ -140,10 +159,10 @@ public class HomePage {
             setDashboardValues();
             if (isThemeDark) {
                 buildChart(new Color(60, 63, 65), Color.WHITE);
-                setColors(new Color(60, 63, 65),Color.WHITE);
+                setStyle(new Color(60, 63, 65),Color.WHITE);
             } else {
                 buildChart(Color.WHITE, new Color(60, 63, 65));
-                setColors(Color.WHITE,new Color(60, 63, 65));
+                setStyle(Color.WHITE,new Color(60, 63, 65));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -155,8 +174,8 @@ public class HomePage {
         dhcpButton.addActionListener(this::btnShowDhcpPanel);
         clearCacheButton.addActionListener(this::btnClearCache);
         addRecordButton.addActionListener(this::btnAddRecord);
+        editRecordsToggleButton.addActionListener(this::btnEditRecord);
         deleteRecordButton.addActionListener(this::btnDeleteRecord);
-        editRecordButton.addActionListener(this::btnEditRecord);
         deleteButton.addActionListener(this::btnDeleteButton);
         addressButton.addActionListener(this::btnShowAddressPanel);
         addIPButton.addActionListener(this::btnAddIP);
@@ -167,7 +186,7 @@ public class HomePage {
         ableDisableInterfaceButton.addActionListener(this::btnAbleDisableInterface);
         deleteInterfaceButton.addActionListener(this::btnDeleteInterface);
         addInterfaceButton.addActionListener(this::btnAddInterface);
-        editButton.addActionListener(this::btnEditDhcpButton);
+        editDhcpButton.addActionListener(this::btnEditDhcpButton);
         addNetworkButton.addActionListener(this::btnAddPool);
         addLeaseButton.addActionListener(this::btnAddLease);
         addClientButton.addActionListener(this::btnAddClient);
@@ -189,9 +208,7 @@ public class HomePage {
         });
 
     //Listner para trocar os botoes consoante a tabela selecionada
-        dnsTabbed.addMouseListener(new
-
-    MouseAdapter() {
+        dnsTabbed.addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked (MouseEvent e){
             super.mouseClicked(e);
@@ -201,13 +218,15 @@ public class HomePage {
                     addRecordButton.setVisible(false);
                     deleteRecordButton.setVisible(false);
                     clearCacheButton.setVisible(true);
-                    editRecordButton.setVisible(false);
+                    editRecordsToggleButton.setVisible(false);
                     break;
                 case 1:
-                    fillDnsRecordsTable();
+                    editRecordsToggleButton.setSelected(false);
+                    editRecordsToggleButton.setText("Enable Edit");
+                    fillDnsRecordsTable(false);
                     addRecordButton.setVisible(true);
                     deleteRecordButton.setVisible(true);
-                    editRecordButton.setVisible(true);
+                    editRecordsToggleButton.setVisible(true);
                     clearCacheButton.setVisible(false);
                     break;
             }
@@ -216,37 +235,36 @@ public class HomePage {
     });
 
     //Listner para trocar os botoes consoante a tabela selecionada
-        tabbedDhcp.addMouseListener(new
-
-    MouseAdapter() {
+        tabbedDhcp.addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked (MouseEvent e){
             super.mouseClicked(e);
+            editDhcpButton.setSelected(false);
+            editDhcpButton.setText("Enable Edit");
             switch (tabbedDhcp.getSelectedIndex()) {
                 case 0:
-                    clearTableSelection(TablesTypes.DHCP);
-                    fillDhcpLeaseTable();
+                    fillDhcpLeaseTable(false);
                     addNetworkButton.setVisible(false);
                     addLeaseButton.setVisible(true);
                     addClientButton.setVisible(false);
                     addServerButton.setVisible(false);
                     break;
                 case 1:
-                    fillDhcpServerTable();
+                    fillDhcpServerTable(false);
                     addNetworkButton.setVisible(false);
                     addLeaseButton.setVisible(false);
                     addClientButton.setVisible(false);
                     addServerButton.setVisible(true);
                     break;
                 case 2:
-                    fillDhcpClientTable();
+                    fillDhcpClientTable(false);
                     addNetworkButton.setVisible(false);
                     addLeaseButton.setVisible(false);
                     addClientButton.setVisible(true);
                     addServerButton.setVisible(false);
                     break;
                 case 3:
-                    fillDhcpNetworkTable();
+                    fillDhcpNetworkTable(false);
                     addNetworkButton.setVisible(true);
                     addLeaseButton.setVisible(false);
                     addClientButton.setVisible(false);
@@ -256,71 +274,49 @@ public class HomePage {
         }
     });
 
+        //Cria Listneers para quando tiver itens selecionados o botao delete ativa
+        recordsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                boolean isSelected = recordsTable.getSelectedRow() != -1;
+                deleteRecordButton.setEnabled(isSelected);
+            }
+        });
 
-    //Cria Listneers para quando tiver itens selecionados o botao delete ativa
-        recordsTable.getSelectionModel().
+        dhcpNetworkTable.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
+                deleteButton.setEnabled(isSelected);
 
-    addListSelectionListener(e ->
 
-    {
-        if (e.getValueIsAdjusting()) {
-            boolean isSelected = recordsTable.getSelectedRow() != -1;
-            deleteRecordButton.setEnabled(isSelected);
-            editRecordButton.setEnabled(isSelected);
-        }
-    });
+            }
+        });
 
-        dhcpNetworkTable.getSelectionModel().
+        dhcpLeasesTable.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                boolean isSelected = dhcpLeasesTable.getSelectedRow() != -1;
+                deleteButton.setEnabled(isSelected);
 
-    addListSelectionListener(e ->
 
-    {
-        if (e.getValueIsAdjusting()) {
-            boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
-            deleteButton.setEnabled(isSelected);
-            editButton.setEnabled(isSelected);
+            }
+        });
 
-        }
-    });
+        dhcpClientsTable.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                boolean isSelected = dhcpClientsTable.getSelectedRow() != -1;
+                deleteButton.setEnabled(isSelected);
 
-        dhcpLeasesTable.getSelectionModel().
 
-    addListSelectionListener(e ->
+            }
+        });
 
-    {
-        if (e.getValueIsAdjusting()) {
-            boolean isSelected = dhcpLeasesTable.getSelectedRow() != -1;
-            deleteButton.setEnabled(isSelected);
-            editButton.setEnabled(isSelected);
+        dhcpServerTable.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                boolean isSelected = dhcpServerTable.getSelectedRow() != -1;
+                deleteButton.setEnabled(isSelected);
 
-        }
-    });
 
-        dhcpClientsTable.getSelectionModel().
-
-    addListSelectionListener(e ->
-
-    {
-        if (e.getValueIsAdjusting()) {
-            boolean isSelected = dhcpClientsTable.getSelectedRow() != -1;
-            deleteButton.setEnabled(isSelected);
-            editButton.setEnabled(isSelected);
-
-        }
-    });
-
-        dhcpServerTable.getSelectionModel().
-
-    addListSelectionListener(e ->
-
-    {
-        if (e.getValueIsAdjusting()) {
-            boolean isSelected = dhcpServerTable.getSelectedRow() != -1;
-            deleteButton.setEnabled(isSelected);
-            editButton.setEnabled(isSelected);
-
-        }
-    });
+            }
+        });
 
         statsPanel.setVisible(true);
         cpuPanel.setVisible(true);
@@ -328,16 +324,50 @@ public class HomePage {
         dhcpPanel.setVisible(false);
         interfacePanel.setVisible(false);
         addrPanel.setVisible(false);
+        routePanel.setVisible(false);
+        updatePanel.setVisible(false);
 
-        //tabbedPaneGeral.setVisible(false);
+        checkUpdateButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                boolean isSelect = checkUpdateButton.isSelected();
+                if (isSelect) {
+                    try {
+                        List<SystemVersion> list;
+                        list = apiClient.getSystemVersion();
+                        SystemVersion systemVersion;
+                        if (!list.isEmpty()) {
+                            systemVersion = list.getLast();
+                            chanel.setText(systemVersion.channel);
+                            instaled.setText(systemVersion.installedVersion);
+                            chanel.setText(systemVersion.channel);
+                            if (systemVersion.latestVersion != null) {
+                                latest.setText(systemVersion.latestVersion);
+                                status.setText(systemVersion.status);
+                                updateButton.setVisible(true);
+                            }
+                            checkUpdateButton.setText("Close");
+                            updatePanel.setVisible(true);
+                        }
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }else {
+                    checkUpdateButton.setText("Check Updates");
+                    updatePanel.setVisible(false);
+                }
+            }
+        });
+    }
 
 
-}
-
-
-
-private boolean isValidAddress(String text) {
+    private boolean isValidAddress(String text) {
         return ADDRESS_PATTERN.matcher(text.trim()).matches();
+    }
+
+    private boolean isValidNetwork(String text) {
+        return NETWORK_PATTERN.matcher(text.trim()).matches();
     }
 
 
@@ -645,63 +675,30 @@ private boolean isValidAddress(String text) {
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
         dialog.setVisible(true);
-        fillDhcpServerTable();
+        fillDhcpServerTable(false);
     }
 
     private void btnEditDhcpButton(ActionEvent actionEvent) {
-        int selectedRow;
-        String id;
+        clearTableSelection(TablesTypes.DHCP);
+        boolean isEdited = editDhcpButton.isSelected();
+        System.out.println(isEdited);
+        if (isEdited) {
+            editDhcpButton.setText("Disable Edit");
+        }else {
+            editDhcpButton.setText("Enable Edit");
+        }
         switch (tabbedDhcp.getTitleAt(tabbedDhcp.getSelectedIndex()).toLowerCase()) {
             case "leases":
-                selectedRow = dhcpLeasesTable.getSelectedRow();
-                id = dhcpLeasesTable.getValueAt(selectedRow, 0).toString();
-                String address =  dhcpLeasesTable.getValueAt(selectedRow, 1).toString();
-                String clientID =  dhcpLeasesTable.getValueAt(selectedRow, 3).toString();
-                String server =  dhcpLeasesTable.getValueAt(selectedRow, 7).toString();
-                EditDhcpLease dialogLease = new EditDhcpLease(owner,id,address,clientID,server);
-                dialogLease.pack();
-                dialogLease.setLocationRelativeTo(owner);
-                dialogLease.setVisible(true);
-                fillDhcpLeaseTable();
-
+                fillDhcpLeaseTable(isEdited);
                 break;
             case "clients":
-                selectedRow = dhcpClientsTable.getSelectedRow();
-                id = dhcpClientsTable.getValueAt(selectedRow, 0).toString();
-                String intef =  dhcpClientsTable.getValueAt(selectedRow, 1).toString();
-                String defaultRoute = dhcpClientsTable.getValueAt(selectedRow, 2).toString();
-                String dns =  dhcpClientsTable.getValueAt(selectedRow, 3).toString();
-                String ntp =  dhcpClientsTable.getValueAt(selectedRow, 4).toString();
-                String disabled =  dhcpClientsTable.getValueAt(selectedRow, 5).toString();
-                EditDhcpClient dialogClient = new EditDhcpClient(owner,id,intef,defaultRoute,dns,ntp,disabled);
-                dialogClient.pack();
-                dialogClient.setLocationRelativeTo(owner);
-                dialogClient.setVisible(true);
-                fillDhcpClientTable();
+                fillDhcpClientTable(isEdited);
                 break;
             case "server":
-                selectedRow = dhcpServerTable.getSelectedRow();
-                id = dhcpServerTable.getValueAt(selectedRow, 0).toString();
-                String name =  dhcpServerTable.getValueAt(selectedRow, 1).toString();
-                String interSelected =  dhcpServerTable.getValueAt(selectedRow, 2).toString();
-                disabled =  dhcpServerTable.getValueAt(selectedRow, 4).toString();
-                EditDhcpServer dialogServer = new EditDhcpServer(owner,id,name,interSelected,disabled);
-                dialogServer.pack();
-                dialogServer.setLocationRelativeTo(owner);
-                dialogServer.setVisible(true);
-                fillDhcpServerTable();
+                fillDhcpServerTable(isEdited);
                 break;
             case "networks":
-                selectedRow = dhcpNetworkTable.getSelectedRow();
-                id = dhcpNetworkTable.getValueAt(selectedRow, 0).toString();
-                String network =  dhcpNetworkTable.getValueAt(selectedRow, 1).toString();
-                dns =  dhcpNetworkTable.getValueAt(selectedRow, 2).toString();
-                String gateway =  dhcpNetworkTable.getValueAt(selectedRow, 3).toString();
-                EditDhcpNetwork dialogNetwork = new EditDhcpNetwork(owner,id,network,dns,gateway);
-                dialogNetwork.pack();
-                dialogNetwork.setLocationRelativeTo(owner);
-                dialogNetwork.setVisible(true);
-                fillDhcpNetworkTable();
+                fillDhcpNetworkTable(isEdited);
                 break;
         }
         clearTableSelection(TablesTypes.DHCP);
@@ -712,7 +709,7 @@ private boolean isValidAddress(String text) {
         clientDialog.pack();
         clientDialog.setLocationRelativeTo(owner);
         clientDialog.setVisible(true);
-        fillDhcpClientTable();
+        fillDhcpClientTable(false);
     }
 
     private void btnAddLease(ActionEvent actionEvent) {
@@ -720,7 +717,7 @@ private boolean isValidAddress(String text) {
         leaseDialog.pack();
         leaseDialog.setLocationRelativeTo(owner);
         leaseDialog.setVisible(true);
-        fillDhcpLeaseTable();
+        fillDhcpLeaseTable(false);
     }
 
     private void btnAddPool(ActionEvent actionEvent) {
@@ -728,7 +725,7 @@ private boolean isValidAddress(String text) {
         poolDialog.pack();
         poolDialog.setLocationRelativeTo(owner);
         poolDialog.setVisible(true);
-        fillDhcpNetworkTable();
+        fillDhcpNetworkTable(false);
 
     }
 
@@ -743,7 +740,7 @@ private boolean isValidAddress(String text) {
                     }
                 }
                 clearTableSelection(TablesTypes.DHCP);
-                fillDhcpLeaseTable();
+                fillDhcpLeaseTable(false);
                 break;
             case "clients":
                 for (int row : dhcpClientsTable.getSelectedRows()) {
@@ -754,7 +751,7 @@ private boolean isValidAddress(String text) {
                     }
                 }
                 clearTableSelection(TablesTypes.DHCP);
-                fillDhcpClientTable();
+                fillDhcpClientTable(false);
                 break;
             case "server":
                 for (int row : dhcpServerTable.getSelectedRows()) {
@@ -765,7 +762,7 @@ private boolean isValidAddress(String text) {
                     }
                 }
                 clearTableSelection(TablesTypes.DHCP);
-                fillDhcpServerTable();
+                fillDhcpServerTable(false);
                 break;
             case "networks":
                 for (int row : dhcpNetworkTable.getSelectedRows()) {
@@ -776,7 +773,7 @@ private boolean isValidAddress(String text) {
                     }
                 }
                 clearTableSelection(TablesTypes.DHCP);
-                fillDhcpNetworkTable();
+                fillDhcpNetworkTable(false);
                 break;
         }
 
@@ -806,20 +803,33 @@ private boolean isValidAddress(String text) {
 
     }
 
-    private void fillDhcpLeaseTable() {
+    private void fillDhcpLeaseTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(2);
+            editableColuns.add(3);
+            editableColuns.add(4);
+
+        }
         try {
-            String [] columNames = new String[] {"ID","Address","Blocked","Client-ID","Disabled","Dynamic", "Last-Seen","Server","Status" };
-            DefaultTableModel model = new DefaultTableModel(columNames, 0);
+            String [] columNames = new String[] {"ID","Address","Server","Client-ID","Disabled","Dynamic", "Last-Seen","Blocked","Status" };
+            DefaultTableModel model = new DefaultTableModel(columNames, 0){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return editableColuns.contains(column);
+                }
+            };
             for (DhcpLease lease : apiClient.getDhcpLeases()) {
                 Object[] row = {
                         lease.id,
                         lease.address,
-                        lease.blocked,
+                        lease.server,
                         lease.clientId,
                         lease.disabled,
                         lease.dynamic,
                         lease.lastSeen,
-                        lease.server,
+                        lease.blocked,
                         lease.status
                 };
                 model.addRow(row);
@@ -829,12 +839,74 @@ private boolean isValidAddress(String text) {
             throw new RuntimeException(exception);
         }
 
+        JComboBox<String> comboBox = new JComboBox<>();
+        try {
+            for (DhcpServer server :new ApiClient().getDhcpServer()){
+                comboBox.addItem(server.name);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        dhcpLeasesTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBox));
+
+        JComboBox<String> comboBox2 = new JComboBox<>();
+        comboBox2.addItem("true");
+        comboBox2.addItem("false");
+        dhcpLeasesTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(comboBox2));
+        dhcpLeasesTable.putClientProperty("terminateEditOnFocusLost", true);
+        dhcpLeasesTable.getModel().addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int row = e.getFirstRow();
+                int col = e.getColumn();
+                if (col == TableModelEvent.ALL_COLUMNS) return;
+                comboBox.setSelectedItem(dhcpLeasesTable.getValueAt(row,col));
+                comboBox2.setSelectedItem(dhcpLeasesTable.getValueAt(row,col));
+
+                if (col == 1 )  {
+                    String newAddress = dhcpLeasesTable.getValueAt(row,col).toString();
+                    if (!isValidAddress(newAddress)) {
+                        JOptionPane.showMessageDialog(owner,
+                                "Invalid Address!\nMust be 0.0.0.0",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }else {
+                        DhcpLease dhcpLeases =new DhcpLease();
+                        dhcpLeases.id = dhcpLeasesTable.getValueAt(row, 0).toString();
+                        dhcpLeases.address = dhcpLeasesTable.getValueAt(row, 1).toString();
+                        dhcpLeases.server = dhcpLeasesTable.getValueAt(row, 2).toString();
+                        dhcpLeases.clientId = dhcpLeasesTable.getValueAt(row, 3).toString();
+                        dhcpLeases.disabled = Boolean.parseBoolean(dhcpLeasesTable.getValueAt(row, 4).toString());
+                        try {
+                            apiClient.postEditDhcpLease(dhcpLeases);
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+
+                }
+
+            }
+        });
+
     }
 
-    private void fillDhcpServerTable() {
+    private void fillDhcpServerTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(2);
+            editableColuns.add(4);
+
+        }
         try {
             String [] columNames = new String[] {"ID","Name","Interface","Address Pool","Disabled","Dynamic"};
-            DefaultTableModel model = new DefaultTableModel(columNames, 0);
+            DefaultTableModel model = new DefaultTableModel(columNames, 0){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return editableColuns.contains(column);
+                }
+            };
             for (DhcpServer serverObject : apiClient.getDhcpServer()) {
                 Object[] row = {
                         serverObject.id,
@@ -851,12 +923,63 @@ private boolean isValidAddress(String text) {
             throw new RuntimeException(exception);
         }
 
+        JComboBox<String> comboBox = new JComboBox<>();
+        try {
+            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
+                comboBox.addItem(interf.name);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        dhcpServerTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBox));
+
+        JComboBox<String> comboBox2 = new JComboBox<>();
+        comboBox2.addItem("true");
+        comboBox2.addItem("false");
+        dhcpServerTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(comboBox2));
+        dhcpServerTable.putClientProperty("terminateEditOnFocusLost", true);
+        dhcpServerTable.getModel().addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int row = e.getFirstRow();
+                int col = e.getColumn();
+                if (col == TableModelEvent.ALL_COLUMNS) return;
+                comboBox.setSelectedItem(dhcpServerTable.getValueAt(row,col));
+                comboBox2.setSelectedItem(dhcpServerTable.getValueAt(row,col));
+                DhcpServer dhcpServer =new DhcpServer();
+                dhcpServer.id = dhcpServerTable.getValueAt(row, 0).toString();
+                dhcpServer.name = dhcpServerTable.getValueAt(row, 1).toString();
+                dhcpServer.interfaceName = dhcpServerTable.getValueAt(row, 2).toString();
+                dhcpServer.disabled = Boolean.parseBoolean(dhcpServerTable.getValueAt(row, 4).toString());
+                try {
+                    apiClient.postEditDhcpServer(dhcpServer);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            }
+        });
+
     }
 
-    private void fillDhcpClientTable() {
+    private void fillDhcpClientTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(2);
+            editableColuns.add(3);
+            editableColuns.add(4);
+            editableColuns.add(5);
+
+        }
         try {
             String[] columNames = {"ID","Inteface","Add Default Route","Dns-Server","Ntp-Server","Disabled"};
-            DefaultTableModel model = new DefaultTableModel(columNames, 0);
+            DefaultTableModel model = new DefaultTableModel(columNames, 0){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return editableColuns.contains(column);
+                }
+            };
             for (DhcpClient dhcpClient : apiClient.getDhcpClients()) {
                 Object[] row = {
                         dhcpClient.id,
@@ -876,11 +999,72 @@ private boolean isValidAddress(String text) {
         } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
+
+        JComboBox<String> comboBox = new JComboBox<>();
+        try {
+            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
+                comboBox.addItem(interf.name);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        dhcpClientsTable.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(comboBox));
+
+        JComboBox<String> comboBox2 = new JComboBox<>();
+        comboBox2.addItem("yes");
+        comboBox2.addItem("no");
+        dhcpClientsTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBox2));
+        JComboBox<String> comboBox3 = new JComboBox<>();
+        comboBox3.addItem("true");
+        comboBox3.addItem("false");
+        dhcpClientsTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(comboBox3));
+        dhcpClientsTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(comboBox3));
+        dhcpClientsTable.getColumnModel().getColumn(5).setCellEditor(new DefaultCellEditor(comboBox3));
+
+        dhcpClientsTable.putClientProperty("terminateEditOnFocusLost", true);
+        dhcpClientsTable.getModel().addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int row = e.getFirstRow();
+                int col = e.getColumn();
+                if (col == TableModelEvent.ALL_COLUMNS) return;
+                comboBox.setSelectedItem(dhcpClientsTable.getValueAt(row,col));
+                comboBox2.setSelectedItem(dhcpClientsTable.getValueAt(row,col));
+                comboBox3.setSelectedItem(dhcpClientsTable.getValueAt(row,col));
+
+                DhcpClient dhcpClient =new DhcpClient();
+                dhcpClient.id = dhcpClientsTable.getValueAt(row, 0).toString();
+                dhcpClient.interfaceName = dhcpClientsTable.getValueAt(row, 1).toString();
+                dhcpClient.addDefaultRoute = dhcpClientsTable.getValueAt(row, 2).toString();
+                dhcpClient.usePeerNtp = dhcpClientsTable.getValueAt(row, 4).toString();
+                dhcpClient.usePeerDns = dhcpClientsTable.getValueAt(row, 3).toString();
+                dhcpClient.disabled = Boolean.parseBoolean(dhcpClientsTable.getValueAt(row, 5).toString());
+                try {
+                    apiClient.postEditDhcpClient(dhcpClient);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            }
+        });
     }
 
-    private void fillDhcpNetworkTable() {
+    private void fillDhcpNetworkTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(2);
+            editableColuns.add(3);
+
+        }
+
         String[] columNames = {"ID","Network","Dns-Server", "Gateway","Dynamic","Dhcp-Option","Ntp-Server","Wins-Server" };
-        DefaultTableModel model = new DefaultTableModel(columNames, 0);
+        DefaultTableModel model = new DefaultTableModel(columNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return editableColuns.contains(column);
+            }
+        };
 
         try {
             for (DhcpNetwork dhcpNetwork : apiClient.getDhcpNetworks()) {
@@ -901,6 +1085,60 @@ private boolean isValidAddress(String text) {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        dhcpNetworkTable.putClientProperty("terminateEditOnFocusLost", true);
+        dhcpNetworkTable.getModel().addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int row = e.getFirstRow();
+                int col = e.getColumn();
+                if (col == TableModelEvent.ALL_COLUMNS) return;
+                String newAddress = dhcpNetworkTable.getValueAt(row,col).toString();
+                if (col == 1){
+                    if (!isValidNetwork(newAddress)) {
+                        JOptionPane.showMessageDialog(owner,
+                                "Invalid Network!\nMust be 0.0.0.0",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                if (col == 2){
+                    if (!isValidAddress(newAddress)) {
+                        JOptionPane.showMessageDialog(owner,
+                                "Invalid DNS!\nMust be 0.0.0.0",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                if (col == 3){
+                    if (!isValidAddress(newAddress)) {
+                        JOptionPane.showMessageDialog(owner,
+                                "Invalid Gateway!\nMust be 0.0.0.0",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+                DhcpNetwork dhcpNetwork =new DhcpNetwork();
+                dhcpNetwork.id = dhcpNetworkTable.getValueAt(row, 0).toString();
+                dhcpNetwork.address = dhcpNetworkTable.getValueAt(row, 1).toString();
+                dhcpNetwork.dnsServer = dhcpNetworkTable.getValueAt(row, 2).toString();
+                dhcpNetwork.gateway = dhcpNetworkTable.getValueAt(row, 3).toString();
+                try {
+                    ApiResponse response =apiClient.postEditDhcpNetwork(dhcpNetwork);
+                    if (response.error != 200) {
+                        JOptionPane.showMessageDialog(owner,
+                                response.detail,
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            }
+        });
 
     }
 
@@ -927,8 +1165,13 @@ private boolean isValidAddress(String text) {
         }
     }
 
-    private void fillDnsRecordsTable() {
-        Set<Integer> editableColuns = Set.of(1, 2,3);
+    private void fillDnsRecordsTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(2);
+            editableColuns.add(3);
+        }
         try {
             String [] columNames = {"ID", "Address", "Name", "Disabled","Dynamic", "TTL", "Type"};
             DefaultTableModel model = new DefaultTableModel(columNames, 0){
@@ -979,7 +1222,7 @@ private boolean isValidAddress(String text) {
                     }else {
                         DnsRecord dnsRecord =new DnsRecord();
                         dnsRecord.id = recordsTable.getValueAt(row, 0).toString();
-                        dnsRecord.address = recordsTable.getValueAt(row, 1).toString();
+                        dnsRecord.address = newAddress;
                         dnsRecord.name = recordsTable.getValueAt(row, 2).toString();
                         dnsRecord.disabled = Boolean.valueOf(recordsTable.getValueAt(row, 3).toString());
                         try {
@@ -1041,7 +1284,7 @@ private boolean isValidAddress(String text) {
             }
             clearTableSelection(TablesTypes.DNS);
         }
-        fillDnsRecordsTable();
+        fillDnsRecordsTable(false);
     }
 
     private void btnAddRecord(ActionEvent actionEvent) {
@@ -1049,12 +1292,20 @@ private boolean isValidAddress(String text) {
         addDnsRecord.pack();
         addDnsRecord.setLocationRelativeTo(owner);
         addDnsRecord.setVisible(true);
-        fillDnsRecordsTable();
+        fillDnsRecordsTable(false);
     }
 
     private void btnEditRecord(ActionEvent actionEvent) {
-
-        if (dnsTabbed.getSelectedIndex() == 1) {
+        clearTableSelection(TablesTypes.DNS);
+        boolean isEdited = editRecordsToggleButton.isSelected();
+        System.out.println(isEdited);
+        if (isEdited) {
+            editRecordsToggleButton.setText("Disable Edit");
+        }else {
+            editRecordsToggleButton.setText("Enable Edit");
+        }
+        fillDnsRecordsTable(isEdited);
+        /*if (dnsTabbed.getSelectedIndex() == 1) {
             int selectedRow = recordsTable.getSelectedRow();
             String id = recordsTable.getValueAt(selectedRow, 0).toString();
             String name = recordsTable.getValueAt(selectedRow, 2).toString();
@@ -1067,7 +1318,7 @@ private boolean isValidAddress(String text) {
             dialog.setVisible(true);
             clearTableSelection(TablesTypes.DNS);
             fillDnsRecordsTable();
-        }
+        }*/
     }
 
     private void btnClearCache(ActionEvent actionEvent) {
@@ -1121,59 +1372,79 @@ private boolean isValidAddress(String text) {
         dhcpPanel.setVisible(true);
         interfacePanel.setVisible(false);
         addrPanel.setVisible(false);
-        fillDhcpLeaseTable();
+        fillDhcpLeaseTable(false);
 
     }
 
-    private void setColors(Color backColor, Color textColor) {
+    private void setStyle(Color backColor, Color textColor) {
+        //Define Font style
+        Font font = new Font("JetBrains Mono", Font.PLAIN,14);
+
         //Set Background Colors
         //Panels Style
-
         Color buttonColor = new Color(255 - backColor.getRed(), 255 - backColor.getGreen(), 255 - backColor.getBlue(), 15);
 
-// hoverColor = 10~15% mais claro ou escuro dependendo da luminosidade
+        // hoverColor = 10~15% mais claro ou escuro dependendo da luminosidade
         float[] hsb = Color.RGBtoHSB(backColor.getRed(), backColor.getGreen(), backColor.getBlue(), null);
         float brightness = Math.min(hsb[2] * 1.15f, 1.0f); // +15% brilho
         Color hoverColor = Color.getHSBColor(hsb[0], hsb[1], brightness);
 
-        mainPanel.setBackground(backColor);
-        contentPanel.setBackground(backColor);
-        navBar.setBackground(backColor);
-        topBar.setBackground(backColor);
-        cpuPanel.setBackground(backColor);
-        statsPanel.setBackground(backColor);
-        statsPanel.setForeground(textColor);
-        dhcpPanel.setBackground(backColor);
-        dnsPanel.setBackground(backColor);
-        addrPanel.setBackground(backColor);
-        interfacePanel.setBackground(backColor);
+        JComponent[] components = {
+                //Pannels
+                mainPanel,contentPanel, navBar, topBar,cpuPanel,statsPanel,dhcpPanel,interfacePanel,addrPanel,dnsPanel,interfacesAllPanel,routePanel,updatePanel,
+                //Top barLabels
+                hostLabel,userLabel,hostIp,username,
+                //VersionPanel
+                status,statusLabel,chanel,chanelLabel,instaLabel,instaled,latestLabel,latest,
+                //StatsPanel Labels
+                frequency,freqLabel,cores,cpuLabel,cpuName,uptime,uptimeLabel,version,versionLabel,memoryLabel,loadLabel,coresLabel,hddLabel,
+                //DNS Panel
+                dnsTabbed,cacheTable,recordsTable,
+                //InterfacesPanel
+                interfaceTable,comboBoxInterfaces,interfacesAllPanel,tabbedPaneBridge,tabbedPaneWiFi,tableInterfacesWiFi,tabbedPaneBridge,
+                tableSP,tablePortsBridge,
+                //Dhcp Panel
+                tabbedDhcp,dhcpServerTable,dhcpNetworkTable,dhcpClientsTable,dhcpLeasesTable,
+                //Address Panel
+                addrTable,
+                //Rout Panel
+                tableRoute,
+
+        };
+
+        for (JComponent component : components){
+            component.setBackground(backColor);
+            component.setForeground(textColor);
+            component.setFont(font);
+        }
+
 
         divider.setForeground(new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(),50));
 
 
         // --- Botões ---
-        JButton[] buttons = {
+        AbstractButton[] buttons = {
                 homeButton, dnsButton, routeButton, addressButton,
                 dhcpButton, interfaceButton,
-                addRecordButton, deleteRecordButton, editRecordButton,
-                deleteButton, editButton,
-                addClientButton, addServerButton, addNetworkButton, addLeaseButton,
+                addRecordButton, deleteRecordButton,updateButton,checkUpdateButton,
+                deleteButton, editDhcpButton,
+                addClientButton, addServerButton, addNetworkButton, addLeaseButton, editRecordsToggleButton,
                 UpdateIPButton, removeIPButton, ableDisableAddrButton, addIPButton,
                 deleteInterfaceButton, ableDisableInterfaceButton, addInterfaceButton,clearCacheButton
         };
 
-        for (JButton btn : buttons) {
+        for (AbstractButton btn : buttons) {
             btn.setBackground(buttonColor);
             btn.setForeground(textColor);
             btn.setFocusPainted(false);
             btn.setBorderPainted(false);
             btn.setOpaque(true);
+            btn.setFont(font);
             btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             // Aplica hover automático
             applyHoverEffect(btn, buttonColor, hoverColor);
         }
-
 
         String iconColor = "black";
         if (textColor.getBlue() ==255 && textColor.getRed() ==255 && textColor.getGreen() ==255) {
@@ -1199,213 +1470,34 @@ private boolean isValidAddress(String text) {
 
 
 
-
-        //Top Bar Style
-        hostLabel.setForeground(textColor);
-        userLabel.setForeground(textColor);
-        hostIp.setForeground(textColor);
-        username.setForeground(textColor);
-
-
-        //CPU Panel
-        frequency.setForeground(textColor);
-        freqLabel.setForeground(textColor);
-        cores.setForeground(textColor);
-        cpuLabel.setForeground(textColor);
-        cpuName.setForeground(textColor);
-        uptime.setForeground(textColor);
-        uptimeLabel.setForeground(textColor);
-        version.setForeground(textColor);
-        versionLabel.setForeground(textColor);
-        memoryLabel.setForeground(textColor);
-        loadLabel.setForeground(textColor);
-        coresLabel.setForeground(textColor);
-        hddLabel.setForeground(textColor);
         progressBarLoad.setForeground(Color.GREEN);
         progressBarMem.setForeground(Color.GREEN);
-
-
-
-
-        //DNS Panel
-        dnsTabbed.setForeground(textColor);
-
-        cacheTable.setBackground(backColor);
-        cacheTable.setForeground(textColor);
-
-        recordsTable.setBackground(backColor);
-        recordsTable.setForeground(textColor);
-
-
-        //InterfacesPanel
-
-        interfaceTable.setBackground(buttonColor);
-        interfaceTable.setForeground(textColor);
-
-
-        // DHCP Panel
-
-        dhcpPanel.setBackground(backColor);
-        dhcpPanel.setForeground(textColor);
-
-
-        tabbedDhcp.setForeground(textColor);
-
-        dhcpServerTable.setBackground(backColor);
-        dhcpServerTable.setForeground(textColor);
-
-        dhcpNetworkTable.setBackground(backColor);
-        dhcpNetworkTable.setForeground(textColor);
-
-        dhcpClientsTable.setBackground(backColor);
-        dhcpClientsTable.setForeground(textColor);
-
-        dhcpLeasesTable.setBackground(backColor);
-        dhcpLeasesTable.setForeground(textColor);
-
-
-        //addressesPanel
-        addrTable.setForeground(textColor);
-        addrTable.setBackground(backColor);
-
-        //Interface Panel
-
-        comboBoxInterfaces.setBackground(buttonColor);
-        comboBoxInterfaces.setForeground(textColor);
-
-        interfaceTable.setBackground(backColor);
-        interfaceTable.setForeground(textColor);
-
-        tableInterfacesWiFi.setBackground(backColor);
-        tableInterfacesWiFi.setForeground(textColor);
-
-        tableSP.setBackground(backColor);
-        tableSP.setForeground(textColor);
-
-
-
-    }
-
-    private void setFonts(){
-        Font font = new Font("JetBrains Mono", Font.PLAIN,14);
-        //MainPanel
-        navBar.setFont(font);
-        topBar.setFont(font);
-        contentPanel.setFont(font);
-
-
-        //Top Panel
-        hostLabel.setFont(font);
-        hostIp.setFont(font);
-        userLabel.setFont(font);
-        username.setFont(font);
-
-        //NavBar
-        homeButton.setFont(font);
-        addressButton.setFont(font);
-        dnsButton.setFont(font);
-        interfaceButton.setFont(font);
-        dhcpButton.setFont(font);
-        routeButton.setFont(font);
-
-
-        //CPU Panel
-        cpuLabel.setFont(font);
-        cpuName.setFont(font);
-        coresLabel.setFont(font);
-        cores.setFont(font);
-        freqLabel.setFont(font);
-        frequency.setFont(font);
-        loadLabel.setFont(font);
-        uptimeLabel.setFont(font);
-        versionLabel.setFont(font);
-        uptime.setFont(font);
-        memoryLabel.setFont(font);
-        version.setFont(font);
-        hddLabel.setFont(font);
         progressBarLoad.setFont(font);
         progressBarMem.setFont(font);
         progressBarHdd.setFont(font);
 
-
-        //InterfacesPanel
-        interfaceTable.setFont(font);
-
-
-        //DNS Panel
-        clearCacheButton.setFont(font);
-
-        addRecordButton.setFont(font);
+        //Set visible components
         addRecordButton.setVisible(false);
+        updateButton.setVisible(false);
 
-        deleteRecordButton.setFont(font);
         deleteRecordButton.setVisible(false);
         deleteRecordButton.setEnabled(false);
 
-        editRecordButton.setFont(font);
-        editRecordButton.setVisible(false);
-        editRecordButton.setEnabled(false);
+        editRecordsToggleButton.setVisible(false);
 
-        cacheTable.setFont(font);
-        recordsTable.setFont(font);
-        dnsTabbed.setFont(font);
-
-        //DHCP Panel
-
-        deleteButton.setFont(font);
         deleteButton.setEnabled(false);
-
-        editButton.setFont(font);
-        editButton.setEnabled(false);
-
-        tabbedDhcp.setFont(font);
-
-        dhcpLeasesTable.setFont(font);
-        dhcpClientsTable.setFont(font);
-        dhcpNetworkTable.setFont(font);
-        dhcpServerTable.setFont(font);
-
-        addNetworkButton.setFont(font);
         addNetworkButton.setVisible(false);
 
-        addServerButton.setFont(font);
         addServerButton.setVisible(false);
 
-        addClientButton.setFont(font);
         addClientButton.setVisible(false);
 
-        addLeaseButton.setFont(font);
         addLeaseButton.setVisible(true);
-
-        //addressesPanel
-        UpdateIPButton.setFont(font);
-
-        removeIPButton.setFont(font);
-
-        ableDisableAddrButton.setFont(font);
-
-        addIPButton.setFont(font);
-
-        addrTable.setFont(font);
-
-
-        //Interface Panel
-
-        deleteInterfaceButton.setFont(font);
-
-        ableDisableInterfaceButton.setFont(font);
-        addInterfaceButton.setFont(font);
-
-        comboBoxInterfaces.setFont(font);
-
-        interfaceTable.setFont(font);
-        tableInterfacesWiFi.setFont(font);
-        tableSP.setFont(font);
 
 
     }
 
-    private void applyHoverEffect(JButton button, Color normal, Color hover) {
+    private void applyHoverEffect(AbstractButton button, Color normal, Color hover) {
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -1476,10 +1568,10 @@ private boolean isValidAddress(String text) {
 
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        /*for ( getAllInterfaces interf : apiClient.getAllInterfaces()) {
-            dataset.addValue(interf.rxDrop, "RX Drop", );
-            dataset.addValue(interf.txDrop, "TX Drop", client.getDefaultRouteDistance());
-        }*/
+        for ( getAllInterfaces interf : apiClient.getAllInterfaces()) {
+            dataset.addValue(interf.rxDrop, "RX Drop", interf.name);
+            dataset.addValue(interf.txDrop, "TX Drop", interf.name);
+        }
         JFreeChart barChart = ChartFactory.createBarChart(
                 "",
                 "Interface",
@@ -1488,13 +1580,32 @@ private boolean isValidAddress(String text) {
                 PlotOrientation.VERTICAL,
                 true, true, false);
         barChart.setBackgroundPaint(backColor);
+        CategoryPlot plot = barChart.getCategoryPlot();
+
+        plot.setBackgroundPaint(backColor);
+        plot.setOutlinePaint(backColor);
+        plot.setRangeGridlinePaint(textColor);
+
+        CategoryAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setLabelPaint(textColor);
+        domainAxis.setTickLabelPaint(textColor);
+
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        rangeAxis.setLabelPaint(textColor);
+        rangeAxis.setTickLabelPaint(textColor);
+
+        LegendTitle legend = barChart.getLegend();
+
+        legend.setItemPaint(textColor);          // texto
+        legend.setBackgroundPaint(backColor);    // fundo
 
         ChartPanel chartPanel = new ChartPanel(barChart);
         chartPanel.setFont(new Font("JetBrains Mono", Font.PLAIN, 12));
         chartPanel.setForeground(textColor);
+
         chartPanel.setMouseZoomable(true, false);
         chartPanel.setMouseWheelEnabled(false);
-        chartPanel.setBackground(textColor);
+        chartPanel.setBackground(backColor);
 
         // Adicionar ao JPanel existente no form (chartPanel1)
         statsPanel.setLayout(new BorderLayout());
