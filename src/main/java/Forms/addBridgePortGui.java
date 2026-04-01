@@ -5,14 +5,14 @@ import ApiClient.ApiClient;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class addBridgePort extends JDialog {
+public class addBridgePortGui extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JTextField textFieldBridgeName;
     private JTextField textFieldInterfaceName;
 
-    public addBridgePort() {
+    public addBridgePortGui() {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);

@@ -9,7 +9,7 @@ public class getInterfaceBridge {
 
     public String name;
 
-    public String running;
+    public boolean running;
 
     public boolean disabled;
 }

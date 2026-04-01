@@ -617,6 +617,20 @@ public class ApiClient {
         return sendRequestPost("/interface/bridge/port/add", payload);
     }
 
+    public String editBridgePort(String id, String bridgeName, String interfaceName, boolean disabled) throws Exception {
+
+        AddBridgePort novaBridge = new AddBridgePort();
+        novaBridge.id = id;
+        novaBridge.interfaceAtual = interfaceName;
+        novaBridge.bridge = bridgeName;
+        novaBridge.disabled = disabled;
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaBridge);
+
+        return sendRequestPost("/interface/bridge/port/set", payload);
+    }
+
     public String bridgePortState(String id, boolean state) throws Exception {
         boolean novoEstado = !state;
         String payload = "{ \".id\": \"" + id +"\",\n" +
@@ -651,6 +665,19 @@ public class ApiClient {
         String payload = gson.toJson(novaInterfaceBridge);
 
         return sendRequestPost("/interface/bridge/add", payload);
+    }
+
+    public String editInterfaceBridge(String id, String name, boolean disabled) throws Exception {
+
+        addNewInterfaceBridge novaInterfaceBridge = new addNewInterfaceBridge();
+        novaInterfaceBridge.name = name;
+        novaInterfaceBridge.disabled = disabled;
+        novaInterfaceBridge.id = id;
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaInterfaceBridge);
+
+        return sendRequestPost("/interface/bridge/set", payload);
     }
 
     // geral
@@ -689,11 +716,11 @@ public class ApiClient {
         return gson.fromJson(endpoint, listType);
     }
 
-    public String addStaticRoute() throws Exception {
+    public String addStaticRoute(String dst, String gateway) throws Exception {
 
         Routes novaRotaEstatica = new Routes();
-        novaRotaEstatica.dst_address = "10.20.30.40./24";
-        novaRotaEstatica.gateway = "10.20.30.41";
+        novaRotaEstatica.dst_address = dst;
+        novaRotaEstatica.gateway = gateway;
         novaRotaEstatica.routing_table = "main";
 
         Gson gson = new Gson();
@@ -706,15 +733,12 @@ public class ApiClient {
         return sendRequestDelete("/ip/route/" + id);
     }
 
-    public String StaticRouteState(String id, boolean disabled) throws Exception {
+    public String StaticRouteState(String id, boolean state) throws Exception {
+        boolean novoEstado = !state;
+        String payload = "{ \".id\": \"" + id +"\",\n" +
+                "\"disabled\": " + novoEstado + "}";
 
-        Routes novoEstado = new Routes();
-        novoEstado.disabled = disabled;
-
-        Gson gson = new Gson();
-        String payload = gson.toJson(novoEstado);
-
-        return sendRequestPut("/ip/route/" + id, payload);
+        return sendRequestPost("/ip/route/set", payload);
     }
 
 

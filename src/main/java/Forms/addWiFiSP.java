@@ -10,7 +10,7 @@ public class addWiFiSP extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox comboBoxDisabled;
-    private JTextField textFieldNameProfile;
+    private JTextField profileName;
 
     public addWiFiSP() {
         setContentPane(contentPane);
@@ -49,7 +49,7 @@ public class addWiFiSP extends JDialog {
         // add your code here
         ApiClient api = new ApiClient();
         try {
-            api.AddProfile(textFieldNameProfile.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
+            api.AddProfile(profileName.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         };
