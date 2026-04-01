@@ -33,9 +33,7 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
-import javax.swing.plaf.basic.BasicBorders;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -406,7 +404,7 @@ public class HomePage {
 
     private void btnRouteAdd(ActionEvent actionEvent) {
         try {
-            addStaticRoute rota = new addStaticRoute();
+            addStaticRoute rota = new addStaticRoute(owner,apiClient);
             rota.pack();
             rota.setLocationRelativeTo(owner);
             rota.setVisible(true);

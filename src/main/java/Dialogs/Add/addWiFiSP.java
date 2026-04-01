@@ -1,16 +1,16 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.Objects;
 
 public class addWiFiSP extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox comboBoxDisabled;
-    private JTextField textFieldNameProfile;
     private final JFrame owner;
     private final ApiClient apiClient;
     private JTextField profileName;
@@ -54,10 +54,10 @@ public class addWiFiSP extends JDialog {
     private void onOK() {
 
         try {
-            apiClient.AddProfile(profileName.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
+            apiClient.AddProfile(profileName.getText(), Boolean.parseBoolean(Objects.requireNonNull(comboBoxDisabled.getSelectedItem()).toString()));
         } catch (Exception e) {
             throw new RuntimeException(e);
-        };
+        }
         dispose();
     }
 

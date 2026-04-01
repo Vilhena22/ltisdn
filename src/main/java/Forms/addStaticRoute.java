@@ -15,25 +15,22 @@ public class addStaticRoute extends JDialog {
     private JTextField gt;
     private JTextField rt;
     private JTextField maskTextField;
-    private Component owner;
+    private final JFrame owner;
+    private final ApiClient apiClient;
 
 
-    public addStaticRoute() {
+    public addStaticRoute(JFrame owner, ApiClient apiClient) {
+        super(owner, "Add Static Route", true);
+        this.apiClient = apiClient;
+        this.owner = owner;
+        SwingUtilities.updateComponentTreeUI(owner);
         setContentPane(contentPane);
-        setModal(true);
+
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -44,11 +41,7 @@ public class addStaticRoute extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
@@ -103,8 +96,7 @@ public class addStaticRoute extends JDialog {
         }
         // Only runs when input is valid
         try {
-            ApiClient api = new ApiClient();
-            api.addStaticRoute(address, gt.getText());
+            apiClient.addStaticRoute(address, gt.getText());
         } catch (Exception e) {
             JOptionPane.showMessageDialog(owner,
                     "Failed to add static route:\n" + e.getMessage(),
