@@ -8,4 +8,9 @@ public class AddBridgePort {
 
     @SerializedName("interface")
     public String interfaceAtual;
+
+    @SerializedName(".id")
+    public String id;
+
+    public boolean disabled;
 }

@@ -15,7 +15,7 @@ public class addBridgePort extends JDialog {
     private final ApiClient apiClient;
 
     public addBridgePort(JFrame owner,ApiClient apiClient) {
-        super(owner, "Add Bridge Port", true);
+        super(owner,"Add Bridge Port",true);
         this.owner = owner;
         this.apiClient = apiClient;
         setContentPane(contentPane);
