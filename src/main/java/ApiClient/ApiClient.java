@@ -47,10 +47,14 @@ public class ApiClient {
     private final String user;
     private final String pass;
 
-    public ApiClient() {
-        this.url = baseUrl;
+    public ApiClient(String username, String password,String host) {
+        this.url = "https://"+ host + "/rest";
         this.user = username;
         this.pass = password;
+    }
+
+    public String checkCredentials() throws Exception {
+        return sendRequestGet("/system/identity");
     }
 
     //DNS Cache
@@ -356,6 +360,10 @@ public class ApiClient {
     private String sendRequestGet(String endpoint) throws Exception {
         HttpsURLConnection conn = getHttpsURLConnection(endpoint);
         conn.setRequestMethod("GET");
+        if (conn.getResponseCode() != 200) {
+            return conn.getResponseMessage();
+        }
+
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder sb = new StringBuilder();
         String line;

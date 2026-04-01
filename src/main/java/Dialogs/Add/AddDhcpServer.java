@@ -18,12 +18,13 @@ public class AddDhcpServer extends JDialog {
     private JCheckBox disabledCheckBox;
     private JLabel interLabel;
     private JLabel nameLabel;
+    private final ApiClient apiClient;
 
-    public AddDhcpServer(Frame owner) {
+    public AddDhcpServer(Frame owner,ApiClient apiClient) {
         super(owner,"Add Dhcp Server",true);
         setContentPane(contentPane);
         getRootPane().setDefaultButton(buttonOK);
-
+        this.apiClient = apiClient;
         Font font = owner.getFont();
         contentPane.setFont(font);
         buttonOK.setFont(font);
@@ -51,9 +52,8 @@ public class AddDhcpServer extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 
-        ApiClient apiClient = new ApiClient();
         try {
-            for (getAllInterfaces inter :apiClient.getAllInterfaces()) {
+            for (getAllInterfaces inter : apiClient.getAllInterfaces()) {
                 interComboBox.addItem(inter.name);
             }
         } catch (Exception e) {
@@ -68,7 +68,7 @@ public class AddDhcpServer extends JDialog {
             dhcpServer.name = nameTextField.getText();
             dhcpServer.interfaceName = Objects.requireNonNull(interComboBox.getSelectedItem()).toString();
             dhcpServer.disabled = Boolean.parseBoolean(String.valueOf(disabledCheckBox.isSelected()));
-            System.out.println(new ApiClient().postDhcpServer(dhcpServer));
+            apiClient.postDhcpServer(dhcpServer);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

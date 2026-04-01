@@ -1,20 +1,25 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 
 import javax.swing.*;
 import java.awt.event.*;
 
-public class addBridgePort extends JDialog {
+public class addInterfaceBridge extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JTextField textFieldBridgeName;
-    private JTextField textFieldInterfaceName;
+    private JComboBox comboBoxDisabled;
+    private JTextField name;
+    private final JFrame owner;
+    private final ApiClient apiClient;
 
-    public addBridgePort() {
+    public addInterfaceBridge(JFrame owner,ApiClient apiClient) {
+        super(owner,"Add Interface Bridge",true );
+        this.owner = owner;
+        this.apiClient = apiClient;
+        SwingUtilities.updateComponentTreeUI(owner);
         setContentPane(contentPane);
-        setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -46,13 +51,11 @@ public class addBridgePort extends JDialog {
     }
 
     private void onOK() {
-        // add your code here
-        ApiClient api = new ApiClient();
         try {
-            api.addBridgePort(textFieldBridgeName.getText(), textFieldInterfaceName.getText());
+            apiClient.addInterfaceBridge(name.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
         } catch (Exception e) {
             throw new RuntimeException(e);
-        };
+        }
         dispose();
     }
 

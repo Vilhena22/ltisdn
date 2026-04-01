@@ -1,7 +1,6 @@
-package Forms;
+package Dialogs.Edit;
 
 import ApiClient.ApiClient;
-import Models.Interfaces.getAllInterfaces;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -15,12 +14,17 @@ public class UpdateIP extends JDialog {
     private JLabel interfaceName;
     private boolean ipValid;
     private String addr;
+    private final JFrame owner;
+    private final ApiClient apiClient;
 
-    public UpdateIP(String ip,String inter) {
+    public UpdateIP(String ip,String inter,JFrame owner, ApiClient apiClient) {
+        super(owner,"Update IP",true);
+        SwingUtilities.updateComponentTreeUI(owner);
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
-
+        this.owner=owner;
+        this.apiClient=apiClient;
         addr = ip;
 
         buttonOK.addActionListener(new ActionListener() {
@@ -75,9 +79,8 @@ public class UpdateIP extends JDialog {
         if (!ipValid) {
             JOptionPane.showMessageDialog(campoIPMask, "Invalid IP!\nExample: 192.168.1.5/24", "Erro", JOptionPane.ERROR_MESSAGE);
         }else {
-            ApiClient api = new ApiClient();
             try {
-                api.UpdateAddress(addr,campoIPMask.getText());
+                apiClient.UpdateAddress(addr,campoIPMask.getText());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

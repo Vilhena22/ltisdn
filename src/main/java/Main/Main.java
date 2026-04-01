@@ -3,7 +3,9 @@ package Main;
 
 import ApiClient.ApiClient;
 import Forms.HomePage;
+import Forms.LoginPage;
 import Models.Route.Routes;
+import Models.RouterDAO;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
@@ -12,7 +14,7 @@ import java.awt.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        SwingUtilities.invokeLater(() -> {
+        /*SwingUtilities.invokeLater(() -> {
 
             boolean isDarkMode = ThemeDetect.isDarkMode();
             if (isDarkMode) {
@@ -33,6 +35,34 @@ public class Main {
                 throw new RuntimeException(e);
             }
 
+        });*/
+
+        SwingUtilities.invokeLater(() -> {
+
+            boolean isDarkMode = ThemeDetect.isDarkMode();
+            if (isDarkMode) {
+                FlatDarkLaf.setup();;
+            }else {
+                FlatLightLaf.setup();
+            }
+
+            try {
+                RouterDAO dao = new RouterDAO();
+                dao.createTable();
+                JFrame frame = new JFrame("SDN TL1 Mikrotik");
+                LoginPage loginPage = new LoginPage(isDarkMode,frame);
+                frame.setContentPane(loginPage.getMainPanel());
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
         });
+
+
+
     }
 }

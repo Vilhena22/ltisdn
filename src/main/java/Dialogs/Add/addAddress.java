@@ -1,11 +1,10 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 import Models.Interfaces.getAllInterfaces;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class addAddress extends JDialog {
@@ -15,11 +14,17 @@ public class addAddress extends JDialog {
     private JFormattedTextField campoIPMask;
     private JComboBox comboBoxInterfaces;
     private boolean ipValid;
+    private final JFrame owner;
+    private final ApiClient apiClient;
 
-    public addAddress() {
+    public addAddress(JFrame owner, ApiClient apiClient) {
+        super(owner,"Add Address",true);
+        SwingUtilities.updateComponentTreeUI(owner);
         setContentPane(contentPane);
-        setModal(true);
         getRootPane().setDefaultButton(buttonOK);
+        this.owner = owner;
+        this.apiClient = apiClient;
+
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -66,10 +71,9 @@ public class addAddress extends JDialog {
             }
         });
 
-        ApiClient getInterface = new ApiClient();
 
         try {
-            for (getAllInterfaces interf : getInterface.getAllInterfaces()) {
+            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
                 comboBoxInterfaces.addItem(interf.name);
             }
         } catch (Exception e) {
@@ -82,9 +86,8 @@ public class addAddress extends JDialog {
         if (!ipValid) {
             JOptionPane.showMessageDialog(campoIPMask, "Invalid IP!\nExample: 192.168.1.5/24", "Erro", JOptionPane.ERROR_MESSAGE);
         }else {
-            ApiClient api = new ApiClient();
             try {
-                api.AddAddress(comboBoxInterfaces.getSelectedItem().toString(), campoIPMask.getText());
+                apiClient.AddAddress(comboBoxInterfaces.getSelectedItem().toString(), campoIPMask.getText());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

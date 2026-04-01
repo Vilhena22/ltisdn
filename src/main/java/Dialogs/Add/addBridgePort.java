@@ -1,20 +1,26 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 
 import javax.swing.*;
 import java.awt.event.*;
 
-public class addWiFiSP extends JDialog {
+public class addBridgePort extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox comboBoxDisabled;
-    private JTextField textFieldNameProfile;
+    private JTextField textFieldBridgeName;
+    private JTextField textFieldInterfaceName;
+    private final JFrame owner;
+    private final ApiClient apiClient;
 
-    public addWiFiSP() {
+    public addBridgePort(JFrame owner,ApiClient apiClient) {
+        super(owner,"Add Bridge Port",true);
+        this.owner = owner;
+        this.apiClient = apiClient;
         setContentPane(contentPane);
         setModal(true);
+        SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -46,10 +52,8 @@ public class addWiFiSP extends JDialog {
     }
 
     private void onOK() {
-        // add your code here
-        ApiClient api = new ApiClient();
         try {
-            api.AddProfile(textFieldNameProfile.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
+            apiClient.addBridgePort(textFieldBridgeName.getText(), textFieldInterfaceName.getText());
         } catch (Exception e) {
             throw new RuntimeException(e);
         };

@@ -2,6 +2,7 @@ package Forms;
 
 import ApiClient.ApiClient;
 import Dialogs.Add.*;
+import Dialogs.Edit.UpdateIP;
 import Models.Address.GetAddress;
 import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
@@ -29,7 +30,9 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.TableModelEvent;
+import javax.swing.plaf.basic.BasicBorders;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -44,8 +47,8 @@ public class HomePage {
     private JPanel mainPanel;
     private JPanel navBar;
     private JButton routeButton;
-    private JLabel hostIp;
-    private JLabel username;
+    private JLabel hostIpText;
+    private JLabel usernameText;
     private JPanel topBar;
     private JButton dhcpButton;
     private JButton interfaceButton;
@@ -129,7 +132,9 @@ public class HomePage {
     private JLabel latest;
     private JLabel instaled;
     private JLabel chanel;
+    private JButton logoutButton;
     private final ApiClient apiClient;
+    private final boolean isDarkMode;
 
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
@@ -142,16 +147,13 @@ public class HomePage {
     );
 
 
-    public HomePage(Boolean isThemeDark, JFrame owner) {
-
+    public HomePage(Boolean isThemeDark, JFrame owner,ApiClient apiClient,String username,String host) {
         this.owner = owner;
-
-        if (isThemeDark) {
-            setStyle(new Color(60, 63, 65), Color.WHITE);
-        }else {
-            setStyle(Color.WHITE, new Color(60, 63, 65));
-        }
-        this.apiClient = new ApiClient();
+        this.isDarkMode = isThemeDark;
+        this.apiClient = apiClient;
+        hostIpText.setText(host);
+        usernameText.setText(username);
+        owner.getRootPane().setDefaultButton(null);
 
         comboBoxInterfaces.addActionListener(e -> interfaceTable());
 
@@ -169,6 +171,7 @@ public class HomePage {
         }
 
 
+        logoutButton.addActionListener(this::btnLogout);
         homeButton.addActionListener(this::btnShowHomePanel);
         dnsButton.addActionListener(this::btnShowDnsPanel);
         dhcpButton.addActionListener(this::btnShowDhcpPanel);
@@ -333,32 +336,41 @@ public class HomePage {
                 super.mouseClicked(e);
                 boolean isSelect = checkUpdateButton.isSelected();
                 if (isSelect) {
-                    try {
-                        List<SystemVersion> list;
-                        list = apiClient.getSystemVersion();
-                        SystemVersion systemVersion;
-                        if (!list.isEmpty()) {
-                            systemVersion = list.getLast();
-                            chanel.setText(systemVersion.channel);
-                            instaled.setText(systemVersion.installedVersion);
-                            chanel.setText(systemVersion.channel);
-                            if (systemVersion.latestVersion != null) {
-                                latest.setText(systemVersion.latestVersion);
-                                status.setText(systemVersion.status);
-                                updateButton.setVisible(true);
+                    new Thread(() -> {
+                        try {
+                            List<SystemVersion> list;
+                            list = apiClient.getSystemVersion();
+                            SystemVersion systemVersion;
+                            if (!list.isEmpty()) {
+                                systemVersion = list.getLast();
+                                chanel.setText(systemVersion.channel);
+                                instaled.setText(systemVersion.installedVersion);
+                                chanel.setText(systemVersion.channel);
+                                if (systemVersion.latestVersion != null) {
+                                    latest.setText(systemVersion.latestVersion);
+                                    status.setText(systemVersion.status);
+                                    updateButton.setVisible(true);
+                                }
+                                checkUpdateButton.setText("Close");
+                                updatePanel.setVisible(true);
                             }
-                            checkUpdateButton.setText("Close");
-                            updatePanel.setVisible(true);
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
                         }
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    }).start();
                 }else {
                     checkUpdateButton.setText("Check Updates");
                     updatePanel.setVisible(false);
                 }
             }
         });
+    }
+
+    private void btnLogout(ActionEvent actionEvent) {
+        owner.setContentPane(new LoginPage(isDarkMode,owner).getMainPanel());
+        owner.revalidate();
+        owner.repaint();
+
     }
 
 
@@ -375,26 +387,26 @@ public class HomePage {
          String selected = (String) comboBoxInterfaces.getSelectedItem();
          if (selected.compareTo("Wi-Fi") == 0){
              if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
-                 addInterfaceWiFi novaInterfaceWiFi = new addInterfaceWiFi();
+                 addInterfaceWiFi novaInterfaceWiFi = new addInterfaceWiFi(owner,apiClient);
                  novaInterfaceWiFi.pack();
                  novaInterfaceWiFi.setLocationRelativeTo(owner);
                  novaInterfaceWiFi.setVisible(true);
              }
              if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Security Profiles") == 0){
-                 addWiFiSP novoPerfil = new addWiFiSP();
+                 addWiFiSP novoPerfil = new addWiFiSP(owner,apiClient);
                  novoPerfil.pack();
                  novoPerfil.setLocationRelativeTo(owner);
                  novoPerfil.setVisible(true);
              }
          }else {
              if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Interfaces") == 0){
-                 addInterfaceBridge novaInterfaceBridge = new addInterfaceBridge();
+                 addInterfaceBridge novaInterfaceBridge = new addInterfaceBridge(owner,apiClient);
                  novaInterfaceBridge.pack();
                  novaInterfaceBridge.setLocationRelativeTo(owner);
                  novaInterfaceBridge.setVisible(true);
              }
              if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Ports") == 0){
-                 addBridgePort newPort = new addBridgePort();
+                 addBridgePort newPort = new addBridgePort(owner,apiClient);
                  newPort.pack();
                  newPort.setLocationRelativeTo(owner);
                  newPort.setVisible(true);
@@ -621,7 +633,7 @@ public class HomePage {
     private void btnUpdateIP(ActionEvent actionEvent) {
         if (addrTable.getSelectedRow() > 0) {
             int selectedRow = addrTable.getSelectedRow();
-            UpdateIP update = new UpdateIP(addrTable.getValueAt(selectedRow, 0).toString(), (String) addrTable.getValueAt(selectedRow, 1));
+            UpdateIP update = new UpdateIP(addrTable.getValueAt(selectedRow, 0).toString(), (String) addrTable.getValueAt(selectedRow, 1),owner,apiClient);
             update.pack();
             update.setLocationRelativeTo(owner);
             update.setVisible(true);
@@ -653,7 +665,7 @@ public class HomePage {
     }
 
     private void btnAddIP(ActionEvent actionEvent) {
-        addAddress novoIP = new addAddress();
+        addAddress novoIP = new addAddress(owner,apiClient);
         novoIP.pack();
         novoIP.setLocationRelativeTo(owner);
         novoIP.setVisible(true);
@@ -671,7 +683,7 @@ public class HomePage {
     }
 
     private void btnAddServer(ActionEvent actionEvent) {
-        AddDhcpServer dialog = new AddDhcpServer(owner);
+        AddDhcpServer dialog = new AddDhcpServer(owner,apiClient);
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
         dialog.setVisible(true);
@@ -705,7 +717,7 @@ public class HomePage {
     }
 
     private void btnAddClient(ActionEvent actionEvent) {
-        AddDhcpClient clientDialog = new AddDhcpClient(owner);
+        AddDhcpClient clientDialog = new AddDhcpClient(owner,apiClient);
         clientDialog.pack();
         clientDialog.setLocationRelativeTo(owner);
         clientDialog.setVisible(true);
@@ -713,7 +725,7 @@ public class HomePage {
     }
 
     private void btnAddLease(ActionEvent actionEvent) {
-        AddDhcpLease leaseDialog = new AddDhcpLease(owner);
+        AddDhcpLease leaseDialog = new AddDhcpLease(owner,apiClient);
         leaseDialog.pack();
         leaseDialog.setLocationRelativeTo(owner);
         leaseDialog.setVisible(true);
@@ -721,7 +733,7 @@ public class HomePage {
     }
 
     private void btnAddPool(ActionEvent actionEvent) {
-        AddDhcpNetwork poolDialog = new AddDhcpNetwork(owner);
+        AddDhcpNetwork poolDialog = new AddDhcpNetwork(owner,apiClient);
         poolDialog.pack();
         poolDialog.setLocationRelativeTo(owner);
         poolDialog.setVisible(true);
@@ -841,7 +853,7 @@ public class HomePage {
 
         JComboBox<String> comboBox = new JComboBox<>();
         try {
-            for (DhcpServer server :new ApiClient().getDhcpServer()){
+            for (DhcpServer server :apiClient.getDhcpServer()){
                 comboBox.addItem(server.name);
             }
 
@@ -1173,26 +1185,7 @@ public class HomePage {
             editableColuns.add(3);
         }
         try {
-            String [] columNames = {"ID", "Address", "Name", "Disabled","Dynamic", "TTL", "Type"};
-            DefaultTableModel model = new DefaultTableModel(columNames, 0){
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return editableColuns.contains(column);
-                }
-            };
-
-            for (DnsRecord dnsRecord : apiClient.getDnsRecord()) {
-                Object[] row = {
-                        dnsRecord.id,
-                        dnsRecord.address,
-                        dnsRecord.name,
-                        dnsRecord.disabled,
-                        dnsRecord.dynamic,
-                        dnsRecord.ttl,
-                        dnsRecord.type
-                };
-                model.addRow(row);
-            }
+            DefaultTableModel model = getDefaultTableModel(editableColuns);
             formatTable(recordsTable, model);
             dnsPanel.setVisible(true);
         } catch (Exception e) {
@@ -1237,6 +1230,30 @@ public class HomePage {
             }
         });
 
+    }
+
+    private DefaultTableModel getDefaultTableModel(Set<Integer> editableColuns) throws Exception {
+        String [] columNames = {"ID", "Address", "Name", "Disabled","Dynamic", "TTL", "Type"};
+        DefaultTableModel model = new DefaultTableModel(columNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return editableColuns.contains(column);
+            }
+        };
+
+        for (DnsRecord dnsRecord : apiClient.getDnsRecord()) {
+            Object[] row = {
+                    dnsRecord.id,
+                    dnsRecord.address,
+                    dnsRecord.name,
+                    dnsRecord.disabled,
+                    dnsRecord.dynamic,
+                    dnsRecord.ttl,
+                    dnsRecord.type
+            };
+            model.addRow(row);
+        }
+        return model;
     }
 
     private void formatTable(JTable table,DefaultTableModel model) {
@@ -1288,7 +1305,7 @@ public class HomePage {
     }
 
     private void btnAddRecord(ActionEvent actionEvent) {
-        AddDnsRecord addDnsRecord = new AddDnsRecord(owner);
+        AddDnsRecord addDnsRecord = new AddDnsRecord(owner,apiClient);
         addDnsRecord.pack();
         addDnsRecord.setLocationRelativeTo(owner);
         addDnsRecord.setVisible(true);
@@ -1379,21 +1396,22 @@ public class HomePage {
     private void setStyle(Color backColor, Color textColor) {
         //Define Font style
         Font font = new Font("JetBrains Mono", Font.PLAIN,14);
-
+/*
         //Set Background Colors
         //Panels Style
-        Color buttonColor = new Color(255 - backColor.getRed(), 255 - backColor.getGreen(), 255 - backColor.getBlue(), 15);
+        Color buttonColor = new Color(12, 61, 101);
+        //Color buttonColor = new Color(255 - backColor.getRed(), 255 - backColor.getGreen(), 255 - backColor.getBlue(), 15);;
 
         // hoverColor = 10~15% mais claro ou escuro dependendo da luminosidade
-        float[] hsb = Color.RGBtoHSB(backColor.getRed(), backColor.getGreen(), backColor.getBlue(), null);
+        float[] hsb = Color.RGBtoHSB(buttonColor.getRed(), buttonColor.getGreen(), buttonColor.getBlue(), null);
         float brightness = Math.min(hsb[2] * 1.15f, 1.0f); // +15% brilho
-        Color hoverColor = Color.getHSBColor(hsb[0], hsb[1], brightness);
+        Color hoverColor = Color.getHSBColor(hsb[0], hsb[1], brightness);*/
 
         JComponent[] components = {
                 //Pannels
                 mainPanel,contentPanel, navBar, topBar,cpuPanel,statsPanel,dhcpPanel,interfacePanel,addrPanel,dnsPanel,interfacesAllPanel,routePanel,updatePanel,
                 //Top barLabels
-                hostLabel,userLabel,hostIp,username,
+                hostLabel,userLabel, hostIpText, usernameText,
                 //VersionPanel
                 status,statusLabel,chanel,chanelLabel,instaLabel,instaled,latestLabel,latest,
                 //StatsPanel Labels
@@ -1424,7 +1442,7 @@ public class HomePage {
 
         // --- Botões ---
         AbstractButton[] buttons = {
-                homeButton, dnsButton, routeButton, addressButton,
+                logoutButton,homeButton, dnsButton, routeButton, addressButton,
                 dhcpButton, interfaceButton,
                 addRecordButton, deleteRecordButton,updateButton,checkUpdateButton,
                 deleteButton, editDhcpButton,
@@ -1433,11 +1451,16 @@ public class HomePage {
                 deleteInterfaceButton, ableDisableInterfaceButton, addInterfaceButton,clearCacheButton
         };
 
+        Color buttonColor = new Color(16, 83, 138);
+        Color hoverColor = new Color(102, 210, 170);
+        Color borderColor = new Color(10, 52, 86,60);
+
         for (AbstractButton btn : buttons) {
             btn.setBackground(buttonColor);
-            btn.setForeground(textColor);
+            btn.setForeground(Color.WHITE);
             btn.setFocusPainted(false);
-            btn.setBorderPainted(false);
+            btn.setBorderPainted(true);
+            btn.setBorder(BorderFactory.createLineBorder(borderColor, 5,true));
             btn.setOpaque(true);
             btn.setFont(font);
             btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1446,28 +1469,57 @@ public class HomePage {
             applyHoverEffect(btn, buttonColor, hoverColor);
         }
 
-        String iconColor = "black";
+        String iconColor = "white";
         if (textColor.getBlue() ==255 && textColor.getRed() ==255 && textColor.getGreen() ==255) {
                 iconColor = "white";
         }
-        Image home = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/home_" + iconColor+ ".png"))).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Image home = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/home_" + iconColor+ ".png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         homeButton.setIcon(new ImageIcon(home));
 
-        Image dns = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/dns_" + iconColor+ ".png"))).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Image dns = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/dns_" + iconColor+ ".png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         dnsButton.setIcon(new ImageIcon(dns));
 
-        Image dhcp = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/dhcp_" + iconColor+ ".png"))).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Image dhcp = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/dhcp_" + iconColor+ ".png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         dhcpButton.setIcon(new ImageIcon(dhcp));
 
-        Image route = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/routes_" + iconColor+ ".png"))).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Image route = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/routes_" + iconColor+ ".png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         routeButton.setIcon(new ImageIcon(route));
 
-        Image inter = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/interface_" + iconColor+ ".png"))).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Image inter = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/interface_" + iconColor+ ".png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         interfaceButton.setIcon(new ImageIcon(inter));
 
-        Image addresses = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/address_" + iconColor+ ".png"))).getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH);
+        Image addresses = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/address_" + iconColor+ ".png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         addressButton.setIcon(new ImageIcon(addresses));
 
+        Image check = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/refresh_" + iconColor+ ".png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        checkUpdateButton.setIcon(new ImageIcon(check));
+        UpdateIPButton.setIcon(new ImageIcon(check));
+        ableDisableInterfaceButton.setIcon(new ImageIcon(check));
+        ableDisableAddrButton.setIcon(new ImageIcon(check));
+        ableDisableStaticRouteButton.setIcon(new ImageIcon(check));
+
+        Image remove = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/delete_" + iconColor+ ".png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        removeIPButton.setIcon(new ImageIcon(remove));
+        deleteButton.setIcon(new ImageIcon(remove));
+        deleteInterfaceButton.setIcon(new ImageIcon(remove));
+        deleteRecordButton.setIcon(new ImageIcon(remove));
+        deleteStaticRouteButton.setIcon(new ImageIcon(remove));
+        clearCacheButton.setIcon(new ImageIcon(remove));
+
+        Image edit = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/edit_" + iconColor+ ".png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        editDhcpButton.setIcon(new ImageIcon(edit));
+        editRecordsToggleButton.setIcon(new ImageIcon(edit));
+
+        Image add = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/add_" + iconColor+ ".png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        addInterfaceButton.setIcon(new ImageIcon(add));
+        addIPButton.setIcon(new ImageIcon(add));
+        addServerButton.setIcon(new ImageIcon(add));
+        addClientButton.setIcon(new ImageIcon(add));
+        addLeaseButton.setIcon(new ImageIcon(add));
+        addRecordButton.setIcon(new ImageIcon(add));
+        addLeaseButton.setIcon(new ImageIcon(add));
+        addNetworkButton.setIcon(new ImageIcon(add));
+        addStaticRouteButton.setIcon(new ImageIcon(add));
 
 
         progressBarLoad.setForeground(Color.GREEN);
@@ -1502,10 +1554,14 @@ public class HomePage {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(hover);
+                button.setBorder(BorderFactory.createLineBorder(new Color(73, 180, 128,60), 5,true));
+                button.setForeground(Color.DARK_GRAY);
             }
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setBackground(normal);
+                button.setBorder(BorderFactory.createLineBorder(new Color(10, 52, 86,60), 5,true));
+                button.setForeground(Color.WHITE);
             }
         });
     }

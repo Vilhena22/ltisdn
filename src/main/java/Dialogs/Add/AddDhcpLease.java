@@ -20,6 +20,7 @@ public class AddDhcpLease extends JDialog {
     private JLabel serverLabel;
     private JLabel clientLabel;
     private JLabel addressLabel;
+    private final ApiClient apiClient;
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
@@ -28,10 +29,11 @@ public class AddDhcpLease extends JDialog {
             "^\\*((\\d{1,2})|([a-zA-Z]))$"
     );
 
-    public AddDhcpLease(Frame owner) {
+    public AddDhcpLease(Frame owner,ApiClient apiClient) {
         super(owner,"Add DHCP Lease",true);
         setContentPane(contentPane);
         SwingUtilities.updateComponentTreeUI(owner);
+        this.apiClient = apiClient;
         getRootPane().setDefaultButton(buttonOK);
 
         Font font = owner.getFont();
@@ -73,7 +75,7 @@ public class AddDhcpLease extends JDialog {
 
         //Preenche os valores da combobox com os servidores de DHCP existentes
         try {
-            for (DhcpServer server :new ApiClient().getDhcpServer()){
+            for (DhcpServer server :apiClient.getDhcpServer()){
                 serverComboBox.addItem(server.name);
             }
 
@@ -81,6 +83,20 @@ public class AddDhcpLease extends JDialog {
             throw new RuntimeException(e);
         }
 
+        addressFormattedText.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                addressFormattedText.setBackground(owner.getBackground());
+            }
+        });
+        clientFormattedText.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                clientFormattedText.setBackground(owner.getBackground());
+            }
+        });
 
     }
 
@@ -91,13 +107,15 @@ public class AddDhcpLease extends JDialog {
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             addressFormattedText.setBackground(new Color(241, 0, 0, 25));
+            return;
         }
         if (!isValidID()) {
             JOptionPane.showMessageDialog(this,
                     "Invalid Client ID!\nMust be *ID",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
-            addressFormattedText.setBackground(new Color(241, 0, 0, 25));
+            clientFormattedText.setBackground(new Color(241, 0, 0, 25));
+            return;
         }
         if (isValidID() && isValidAddress()) {
             try {
@@ -105,7 +123,7 @@ public class AddDhcpLease extends JDialog {
                 dhcpLease.address = addressFormattedText.getText();
                 dhcpLease.server = Objects.requireNonNull(serverComboBox.getSelectedItem()).toString();
                 dhcpLease.clientId = clientFormattedText.getText();
-                new ApiClient().postDhcpLease(dhcpLease);
+                apiClient.postDhcpLease(dhcpLease);
 
             } catch (Exception e) {
                 throw new RuntimeException(e);

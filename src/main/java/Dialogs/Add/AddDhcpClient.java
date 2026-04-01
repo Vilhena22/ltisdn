@@ -28,13 +28,16 @@ public class AddDhcpClient extends JDialog {
     private final ButtonGroup defaultRouteBG;
     private final ButtonGroup dnsBG;
     private final ButtonGroup ntpBG;
+    private final ApiClient apiClient;
 
 
-    public AddDhcpClient(Frame owner) {
+    public AddDhcpClient(Frame owner,ApiClient apiClient) {
         super(owner,"Add Dhcp Client",true);
         setContentPane(contentPane);
+        SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
         Font font = owner.getFont();
+        this.apiClient = apiClient;
 
         contentPane.setFont(font);
         buttonOK.setFont(font);
@@ -92,7 +95,7 @@ public class AddDhcpClient extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         try {
-            for (getAllInterfaces intef : new ApiClient().getAllInterfaces()){
+            for (getAllInterfaces intef : apiClient.getAllInterfaces()){
                 interComboBox.addItem(intef.name);
             }
         } catch (Exception e) {
@@ -110,7 +113,7 @@ public class AddDhcpClient extends JDialog {
             dhcpClient.usePeerNtp= ntpBG.getSelection().getActionCommand();
             dhcpClient.usePeerDns=dnsBG.getSelection().getActionCommand();
             dhcpClient.disabled = Boolean.parseBoolean(String.valueOf(disabledCheck.isSelected()));
-            new ApiClient().postDhcpClients(dhcpClient);
+            apiClient.postDhcpClients(dhcpClient);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

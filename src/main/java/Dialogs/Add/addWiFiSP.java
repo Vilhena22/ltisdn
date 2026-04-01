@@ -1,20 +1,25 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 
 import javax.swing.*;
 import java.awt.event.*;
 
-public class addInterfaceBridge extends JDialog {
+public class addWiFiSP extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox comboBoxDisabled;
-    private JTextField name;
+    private JTextField textFieldNameProfile;
+    private final JFrame owner;
+    private final ApiClient apiClient;
 
-    public addInterfaceBridge() {
+    public addWiFiSP(JFrame owner, ApiClient apiClient) {
+        super(owner,"Add Interface WiFi",true);
+        this.owner = owner;
+        this.apiClient = apiClient;
+        SwingUtilities.updateComponentTreeUI(owner);
         setContentPane(contentPane);
-        setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
@@ -46,13 +51,12 @@ public class addInterfaceBridge extends JDialog {
     }
 
     private void onOK() {
-        // add your code here
-        ApiClient api = new ApiClient();
+
         try {
-            api.addInterfaceBridge(name.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
+            apiClient.AddProfile(textFieldNameProfile.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
+        };
         dispose();
     }
 

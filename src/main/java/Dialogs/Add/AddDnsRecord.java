@@ -20,15 +20,17 @@ public class AddDnsRecord extends JDialog {
     private JLabel addressLabel;
     private JLabel ttlLabel;
     private JSpinner spinnerTTL;
+    private final ApiClient apiClient;
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
     );
 
 
-    public AddDnsRecord(Frame owner) {
+    public AddDnsRecord(Frame owner,ApiClient apiClient) {
         super(owner,"Add DNS Record",true);
         Font font = owner.getFont();
+        this.apiClient = apiClient;
         SwingUtilities.updateComponentTreeUI(owner);
         setContentPane(contentPane);
         setModal(true);
@@ -68,6 +70,14 @@ public class AddDnsRecord extends JDialog {
         NumberFormatter formatter = (NumberFormatter) textField.getFormatter();
         formatter.setAllowsInvalid(false);
 
+        textFieldAddress.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                textFieldAddress.setBackground(owner.getBackground());
+            }
+        });
+
     }
 
     private void onOK() {
@@ -79,7 +89,6 @@ public class AddDnsRecord extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
             textFieldAddress.setBackground(new Color(241, 0, 0, 25));
         }else {
-            ApiClient apiClient = new ApiClient();
             try {
                 DnsRecord dnsRecord = new DnsRecord();
                 dnsRecord.name = textFieldName.getText();

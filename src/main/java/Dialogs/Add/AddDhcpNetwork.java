@@ -20,6 +20,7 @@ public class AddDhcpNetwork extends JDialog {
     private JLabel dnsLabel;
     private JLabel gatewayLabel;
     private final Frame owner;
+    private final ApiClient apiClient;
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$"
@@ -30,9 +31,10 @@ public class AddDhcpNetwork extends JDialog {
                     "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)/(3[0-2]|[12]?\\d)$"
     );
 
-    public AddDhcpNetwork(Frame owner) {
+    public AddDhcpNetwork(Frame owner,ApiClient apiClient) {
         super(owner,"Add DHCP Network",true);
         this.owner = owner;
+        this.apiClient = apiClient;
         setContentPane(contentPane);
         SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
@@ -62,6 +64,27 @@ public class AddDhcpNetwork extends JDialog {
 
         // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        addressFormattedText.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                addressFormattedText.setBackground(owner.getBackground());
+            }
+        });
+        dnsFormattedText.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                dnsFormattedText.setBackground(owner.getBackground());
+            }
+        });
+        gatewayFormattedText.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                gatewayFormattedText.setBackground(owner.getBackground());
+            }
+        });
 
 
     }
@@ -72,7 +95,8 @@ public class AddDhcpNetwork extends JDialog {
                     "Invalid Network!\nMust be 0.0.0.0/24",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
-            addressFormattedText.setBackground(new Color(241, 0, 0, 25));
+            addressFormattedText.setBackground(new Color(241, 0, 15, 15));
+            return;
         }
 
         if (!isValidDns(dnsFormattedText.getText())) {
@@ -80,7 +104,8 @@ public class AddDhcpNetwork extends JDialog {
                     "Invalid DNS Server!\nMust be 0.0.0.0",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
-            dnsFormattedText.setBackground(new Color(241, 0, 0, 25));
+            dnsFormattedText.setBackground(new Color(241, 0, 15, 15));
+            return;
         }
 
         if (!isValidGateway(gatewayFormattedText.getText())) {
@@ -88,28 +113,32 @@ public class AddDhcpNetwork extends JDialog {
                     "Invalid Gateway Address!\nMust be 0.0.0.0",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
-            gatewayFormattedText.setBackground(new Color(241, 0, 0, 25));
+            gatewayFormattedText.setBackground(new Color(241, 0, 15, 15));
+            return;
         }
-        if (isValidDns(dnsFormattedText.getText()) && isValidGateway(gatewayFormattedText.getText()) && isValidNetwork(addressFormattedText.getText())) {
-            // tudo válido
-            try {
-                DhcpNetwork network = new DhcpNetwork();
-                network.address = addressFormattedText.getText();
-                network.dnsServer = dnsFormattedText.getText();
-                network.gateway = gatewayFormattedText.getText();
-                System.out.println();
-                ApiResponse response = new ApiClient().postDhcpNetwork(network);
-                if (response.error >= 400) {
-                    JOptionPane.showMessageDialog(owner,
-                            response.detail,
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        // tudo válido
+        try {
+            DhcpNetwork network = new DhcpNetwork();
+            network.address = addressFormattedText.getText();
+            network.dnsServer = dnsFormattedText.getText();
+            network.gateway = gatewayFormattedText.getText();
+            ApiResponse response = apiClient.postDhcpNetwork(network);
+            if (response.error >= 400) {
+                JOptionPane.showMessageDialog(owner,
+                        response.detail,
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }else {
+                dispose();
             }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(owner,
+                    "Unexpected Error!\nError: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
+
     }
 
     private void onCancel() {
