@@ -134,7 +134,7 @@ public class LoginPage {
     private void login(ActionEvent actionEvent) {
         userTextField.setText("admin");
         passwordField.setText("microtik");
-        hostFormattedTextField.setText("192.168.56.105");
+        hostFormattedTextField.setText("192.168.1.72");
         String username = userTextField.getText();
         String password = passwordField.getText();
         String host = hostFormattedTextField.getText();

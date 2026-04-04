@@ -11,5 +11,4 @@ public class addNewInterfaceBridge {
     @SerializedName(".id")
     public String id;
 
-    public boolean running;
 }
