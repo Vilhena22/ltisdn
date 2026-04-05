@@ -4,6 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class AddInterfaceWiFi {
 
+    @SerializedName(".id")
+    public String id;
+
     public String name;
 
     @SerializedName("master-interface")

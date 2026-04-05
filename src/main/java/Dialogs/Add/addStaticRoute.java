@@ -1,9 +1,9 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
+import Models.Interfaces.getAllInterfaces;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.regex.Pattern;
 
@@ -15,6 +15,7 @@ public class addStaticRoute extends JDialog {
     private JTextField gt;
     private JTextField rt;
     private JTextField maskTextField;
+    private JComboBox comboBoxGateway;
     private final JFrame owner;
     private final ApiClient apiClient;
 
@@ -59,23 +60,6 @@ public class addStaticRoute extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        // Validate gateway
-        String gateway = gt.getText().trim();
-        if (!ADDRESS_PATTERN.matcher(gateway).matches()) {
-            JOptionPane.showMessageDialog(owner,
-                    "Invalid Gateway!\nExample: 192.168.1.1",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        // Validate address with gateway
-        if (address.equals(gateway)) {
-            JOptionPane.showMessageDialog(owner,
-                    "Destination address and gateway must not be the same!",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
         // Validate mask
         int mask;
         try {
@@ -94,6 +78,14 @@ public class addStaticRoute extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+        try {
+            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
+                comboBoxGateway.addItem(interf.name);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         // Only runs when input is valid
         try {
             apiClient.addStaticRoute(address, gt.getText());

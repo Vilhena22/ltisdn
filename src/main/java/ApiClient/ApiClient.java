@@ -39,8 +39,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 
-import static ApiClient.MikrotikConfig.*;
-
 public class ApiClient {
 
     private final String url;
@@ -609,9 +607,9 @@ public class ApiClient {
         return gson.fromJson(endpoint, listType);
     }
 
-    public Integer deleteBridgePort(String id) throws Exception {
-        return sendRequestDelete("/interface/bridge/port/" + id);
-    }
+//    public Integer deleteBridgePort(String id) throws Exception {
+//        return sendRequestDelete("/interface/bridge/port/" + id);
+//    }
 
     public String addBridgePort(String bridgeName, String interfaceName) throws Exception {
 
@@ -659,9 +657,9 @@ public class ApiClient {
         return gson.fromJson(endpoint, listType);
     }
 
-    public Integer deleteInterfaceBridge(String id) throws Exception {
-        return sendRequestDelete("/interface/bridge/" + id);
-    }
+//    public Integer deleteInterfaceBridge(String id) throws Exception {
+//        return sendRequestDelete("/interface/bridge/" + id);
+//    }
 
     public String addInterfaceBridge(String name, boolean disabled) throws Exception {
 
@@ -750,4 +748,47 @@ public class ApiClient {
     }
 
 
+    public String editInterfaceWifi(String id, String nome, String ssid, boolean state) throws Exception {
+
+        AddInterfaceWiFi novaInterface = new AddInterfaceWiFi();
+        novaInterface.id = id;
+        novaInterface.name = nome;
+        novaInterface.ssid = ssid;
+        novaInterface.disabled = state;
+
+        //converter objeto para json
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaInterface);
+
+        return sendRequestPost("/interface/wireless/set", payload);
+    }
+
+    public String editWifiSP(String id, String name, boolean state) throws Exception {
+
+        AddProfile novoProfile = new AddProfile();
+        novoProfile.id = id;
+        novoProfile.name = name;
+        novoProfile.disabled = state;
+
+        //converter objeto para json
+        Gson gson = new Gson();
+        String payload = gson.toJson(novoProfile);
+
+        return sendRequestPost("/interface/wifi/security/set", payload);
+    }
+
+    public String editStaticRoute(String id, String gateway, String dst_address, boolean disabled) throws Exception {
+
+        Routes novaRotaEstatica = new Routes();
+        novaRotaEstatica.id = id;
+        novaRotaEstatica.dst_address = dst_address;
+        novaRotaEstatica.gateway = gateway;
+        novaRotaEstatica.routing_table = "main";
+        novaRotaEstatica.disabled = disabled;
+
+        Gson gson = new Gson();
+        String payload = gson.toJson(novaRotaEstatica);
+
+        return sendRequestPost("/ip/route/set", payload);
+    }
 }
