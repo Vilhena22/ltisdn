@@ -259,6 +259,8 @@ public class LoginPage {
         border.setTitleFont(new Font("JetBrains Mono", Font.PLAIN,25));
         singLabel.setFont(new Font("JetBrains Mono", Font.PLAIN,25));
 
+        UIManager.put("Button.font", font);
+
 
     }
 

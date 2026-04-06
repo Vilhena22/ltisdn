@@ -289,7 +289,7 @@ public class HomePage {
             }
         });
 
-    //Listner para trocar os botoes consoante a tabela selecionada
+    //Listener para trocar os botoes consoante a tabela selecionada
         dnsTabbed.addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked (MouseEvent e){
@@ -316,7 +316,7 @@ public class HomePage {
         }
     });
 
-    //Listner para trocar os botoes consoante a tabela selecionada
+    //Listener para trocar os botoes consoante a tabela selecionada
         tabbedDhcp.addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked (MouseEvent e){
@@ -354,7 +354,7 @@ public class HomePage {
         }
     });
 
-        //Cria Listneers para quando tiver itens selecionados o botao delete ativa
+        //Cria Listeners para quando tiver itens selecionados o botao delete ativa
         tableInterfacesWiFi.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return; // evita eventos duplicados
 
@@ -669,12 +669,14 @@ public class HomePage {
                 interWG.setLocationRelativeTo(owner);
                 interWG.setVisible(true);
                 fillInterfacesWireGuardTable(false);
+                break;
             case 1:
                 AddWireguardPeer peer = new AddWireguardPeer(owner,apiClient);
                 peer.pack();
                 peer.setLocationRelativeTo(owner);
                 peer.setVisible(true);
                 fillPeersWireGuardTable(false);
+                break;
         }
     }
 
@@ -761,23 +763,18 @@ public class HomePage {
     }
 
     private void btnShowRoutePanel(ActionEvent actionEvent) {
-        try {
-            contentPanel.setVisible(false);
-            routePanel.setVisible(true);
-            cpuPanel.setVisible(false);
-            addrPanel.setVisible(false);
-            dnsPanel.setVisible(false);
-            dhcpPanel.setVisible(false);
-            interfacePanel.setVisible(false);
-            statsPanel.setVisible(false);
-            fillStaticRouteTable(false);
-            wireGuardPanel.setVisible(false);
-            updatePanel.setVisible(false);
-            dividerCheck.setVisible(false);
+        routePanel.setVisible(true);
+        cpuPanel.setVisible(false);
+        addrPanel.setVisible(false);
+        dnsPanel.setVisible(false);
+        dhcpPanel.setVisible(false);
+        interfacePanel.setVisible(false);
+        statsPanel.setVisible(false);
+        wireGuardPanel.setVisible(false);
+        updatePanel.setVisible(false);
+        dividerCheck.setVisible(false);
+        fillStaticRouteTable(false);
 
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
     }
 
     private void fillStaticRouteTable(boolean isEditing) {
@@ -2207,11 +2204,14 @@ public class HomePage {
                 break;
             case ROUTE:
                 tableRoute.clearSelection();
+                break;
             case WIREGUARD:
                 wirePeersTable.clearSelection();
                 wireInterfacesTable.clearSelection();
+                break;
             case ADDRESS:
                 addrTable.clearSelection();
+                break;
             default:
                 break;
         }
@@ -2324,7 +2324,7 @@ public class HomePage {
         Font font = new Font("JetBrains Mono", Font.PLAIN,14);
 
         JComponent[] components = {
-                //Pannels
+                //Panels
                 mainPanel,contentPanel, navBar, topBar,cpuPanel,statsPanel,dhcpPanel,interfacePanel,addrPanel,dnsPanel,interfacesAllPanel,routePanel,updatePanel,
                 //Top barLabels
                 hostLabel,userLabel, hostIpText, usernameText,
@@ -2532,7 +2532,19 @@ public class HomePage {
         wireguardButton.setIcon(new ImageIcon(wire));
         wireguardButton.setRolloverIcon(new ImageIcon(wireHover));
 
+        Image setup = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/setup_white.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        Image setupHover = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/setup_black.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
 
+        setupDnsConfigButton.setIcon(new ImageIcon(setup));
+        setupDnsConfigButton.setRolloverIcon(new ImageIcon(setupHover));
+        setupWireGuardButton.setIcon(new ImageIcon(setup));
+        setupWireGuardButton.setRolloverIcon(new ImageIcon(setupHover));
+
+        Image signout = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/logout_white.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+        Image signoutHover = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/logout_black.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
+
+        logoutButton.setIcon(new ImageIcon(signout));
+        logoutButton.setRolloverIcon(new ImageIcon(signoutHover));
 
         progressBarLoad.setForeground(Color.GREEN);
         progressBarMem.setForeground(Color.GREEN);
