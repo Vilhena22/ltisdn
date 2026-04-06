@@ -565,8 +565,6 @@ public class HomePage {
                     ableDisableStaticRouteButton.setText("Disable");
                 }else {
                     ableDisableStaticRouteButton.setText("Enable");
-                }else {
-                    ableDisableStaticRouteButton.setText("Disable");
                 }
             }
         });
