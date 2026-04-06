@@ -8,4 +8,14 @@ public class ApiResponse {
     public String detail;
     public String message;
     public String ret;
+
+    @Override
+    public String toString() {
+        return "ApiResponse{" +
+                "error=" + error +
+                ", detail='" + detail + '\'' +
+                ", message='" + message + '\'' +
+                ", ret='" + ret + '\'' +
+                '}';
+    }
 }

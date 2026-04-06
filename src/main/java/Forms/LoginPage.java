@@ -218,12 +218,9 @@ public class LoginPage {
 
         //Set Background Colors
         //Panels Style
-        Color buttonColor = new Color(255 - backColor.getRed(), 255 - backColor.getGreen(), 255 - backColor.getBlue(), 15);
 
-        // hoverColor = 10~15% mais claro ou escuro dependendo da luminosidade
-        float[] hsb = Color.RGBtoHSB(backColor.getRed(), backColor.getGreen(), backColor.getBlue(), null);
-        float brightness = Math.min(hsb[2] * 1.15f, 1.0f); // +15% brilho
-        Color hoverColor = Color.getHSBColor(hsb[0], hsb[1], brightness);
+        Color buttonColor = new Color(16, 83, 138);
+        Color hoverColor = new Color(102, 210, 170);
 
         JComponent[] components = {
             loginPanel,deviceTable,scrollPanel,panel1,hostFormattedTextField,userTextField,passwordField,
@@ -246,7 +243,7 @@ public class LoginPage {
 
         for (AbstractButton btn : buttons) {
             btn.setBackground(buttonColor);
-            btn.setForeground(textColor);
+            btn.setForeground(Color.WHITE);
             btn.setFocusPainted(false);
             btn.setBorderPainted(false);
             btn.setOpaque(true);
@@ -272,10 +269,12 @@ public class LoginPage {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(hover);
+                button.setForeground(Color.BLACK);
             }
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setBackground(normal);
+                button.setForeground(Color.WHITE);
             }
         });
     }

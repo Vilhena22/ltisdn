@@ -1,9 +1,8 @@
-package Forms;
+package Dialogs.Add;
 
 import ApiClient.ApiClient;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.regex.Pattern;
 

@@ -4,4 +4,5 @@ public enum TablesTypes {
     DNS,
     DHCP,
     BRIDGE,
+    WIREGUARD,
 }
