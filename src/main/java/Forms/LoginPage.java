@@ -28,7 +28,7 @@ public class LoginPage {
     private JPanel userPanel;
     private JPanel passPanel;
     private JLabel singLabel;
-    private JFrame owner;
+    private final JFrame owner;
     private final boolean isThemeDark;
     private ApiClient apiClient;
 
@@ -134,7 +134,7 @@ public class LoginPage {
     private void login(ActionEvent actionEvent) {
         userTextField.setText("admin");
         passwordField.setText("microtik");
-        hostFormattedTextField.setText("192.168.56.105");
+        hostFormattedTextField.setText("192.168.1.72");
         String username = userTextField.getText();
         String password = passwordField.getText();
         String host = hostFormattedTextField.getText();
@@ -177,7 +177,7 @@ public class LoginPage {
                     router.host = host;
                     router.username = username;
                     router.password = password;
-                    RouterDAO dao  = new RouterDAO().getInstance();
+                    RouterDAO dao  = RouterDAO.getInstance();
                     if (!dao.checkRouter(router)) {
                         dao.saveRouter(router);
                     }

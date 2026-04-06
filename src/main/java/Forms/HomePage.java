@@ -18,8 +18,8 @@ import Models.Interfaces.bridge.ports.AddBridgePort;
 import Models.Interfaces.bridge.ports.GetPorts;
 import Models.Interfaces.getAllInterfaces;
 import Models.Interfaces.wifi.interfaces.GetInterfacesWiFi;
-import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.ApiResponse;
+import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.Route.Routes;
 import Models.System.SystemResources;
 import Models.System.SystemVersion;
@@ -151,6 +151,8 @@ public class HomePage {
     private JButton disAbleWireguardButton;
     private JButton setupWireGuardButton;
     private JButton generateConfButton;
+    private JToggleButton editInterfacesButton;
+    private JToggleButton editRouteButton;
     private final ApiClient apiClient;
     private final boolean isDarkMode;
 
@@ -225,7 +227,8 @@ public class HomePage {
         deleteStaticRouteButton.addActionListener(this::btnRouteDelete);
         addStaticRouteButton.addActionListener(this::btnRouteAdd);
         ableDisableStaticRouteButton.addActionListener(this::btnRouteAbleDisabled);
-        editBridgeButton.addActionListener(this::btnEditBridgeButton);
+        editInterfacesButton.addActionListener(this::btnEditBridgeButton);
+        editRouteButton.addActionListener(this::btnEditRouteButton);
 
         wireguardTabbedPane.addMouseListener(new MouseAdapter() {
             @Override
@@ -339,6 +342,74 @@ public class HomePage {
             boolean selected = addrTable.getSelectedRow() != -1;
             UpdateIPButton.setEnabled(selected);
             ableDisableAddrButton.setEnabled(selected);
+        });
+
+        tableInterfacesWiFi.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return; // evita eventos duplicados
+
+            int row = tableInterfacesWiFi.getSelectedRow();
+            if (row == -1) return; // evita exceção quando nada está selecionado
+
+            int disableCol = tableInterfacesWiFi.getColumnCount() - 1;
+
+            Boolean disabled = (Boolean) tableInterfacesWiFi.getValueAt(row, disableCol);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                ableDisableInterfaceButton.setText("Enable");
+            } else {
+                ableDisableInterfaceButton.setText("Disable");
+            }
+        });
+
+        tableSP.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return; // evita eventos duplicados
+
+            int row = tableSP.getSelectedRow();
+            if (row == -1) return; // evita exceção quando nada está selecionado
+
+            int disableCol = tableSP.getColumnCount() - 1;
+
+            Boolean disabled = (Boolean) tableSP.getValueAt(row, disableCol);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                ableDisableInterfaceButton.setText("Enable");
+            } else {
+                ableDisableInterfaceButton.setText("Disable");
+            }
+        });
+
+        tableInterfacesBridge.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return; // evita eventos duplicados
+
+            int row = tableInterfacesBridge.getSelectedRow();
+            if (row == -1) return; // evita erro quando nada está selecionado
+
+            int disableCol = tableInterfacesBridge.getColumnCount() - 1;
+
+            Boolean disabled = (Boolean) tableInterfacesBridge.getValueAt(row, disableCol);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                ableDisableInterfaceButton.setText("Enable");
+            } else {
+                ableDisableInterfaceButton.setText("Disable");
+            }
+        });
+
+        tablePortsBridge.getSelectionModel().addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) return;
+
+            int row = tablePortsBridge.getSelectedRow();
+            if (row == -1) return;
+
+            int disableCol = tablePortsBridge.getColumnCount() - 1;
+
+            Boolean disabled = (Boolean) tablePortsBridge.getValueAt(row, disableCol);
+
+            if (disabled != null && !disabled) {
+                ableDisableInterfaceButton.setText("Enable");
+            } else {
+                ableDisableInterfaceButton.setText("Disable");
+            }
         });
 
         recordsTable.getSelectionModel().addListSelectionListener(e -> {
@@ -456,6 +527,45 @@ public class HomePage {
             }
         });
 
+        addrTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                int row = addrTable.getSelectedRow();
+                if (addrTable.getValueAt(row, 3).equals(false)){
+                    ableDisableAddrButton.setText("Enable");
+                }else {
+                    ableDisableAddrButton.setText("Disable");
+                }
+            }
+        });
+        tableRoute.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                int row = tableRoute.getSelectedRow();
+                int dis = tableRoute.getColumnCount() -1;
+                if (tableRoute.getValueAt(row, dis).equals(false)){
+                    ableDisableStaticRouteButton.setText("Enable");
+                }else {
+                    ableDisableStaticRouteButton.setText("Disable");
+                }
+            }
+        });
+    }
+
+    private void btnEditRouteButton(ActionEvent actionEvent) {
+        clearTableSelection(TablesTypes.ROUTE);
+        boolean isEdited = editRouteButton.isSelected();
+
+        //System.out.println(isEdited);
+        if (isEdited) {
+            editRouteButton.setText("Disable Edit");
+        }else {
+            editRouteButton.setText("Enable Edit");
+        }
+        fillBridgeInterfacesTable(isEdited);
+        clearTableSelection(TablesTypes.ROUTE);
     }
 
     private void btnDeleteWireguard(ActionEvent actionEvent) {
@@ -658,7 +768,6 @@ public class HomePage {
             editableColuns.add(3);
         }
 
-
         String[] columNames = {"ID", "Gateway", "Static", "Destination Address", "Routing table","Disabled"};
         DefaultTableModel model = new DefaultTableModel(columNames, 0);
 
@@ -693,7 +802,7 @@ public class HomePage {
 
     private void btnAddInterface(ActionEvent actionEvent) {
          String selected = (String) comboBoxInterfaces.getSelectedItem();
-         if (selected.compareTo("Wi-Fi") == 0){
+         if (Objects.requireNonNull(selected).compareTo("Wi-Fi") == 0){
              if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
                  addInterfaceWiFi novaInterfaceWiFi = new addInterfaceWiFi(owner,apiClient);
                  novaInterfaceWiFi.pack();
@@ -731,7 +840,7 @@ public class HomePage {
         String id = "";
         String endpoint = "";
 
-        switch (comboBoxValue) {
+        switch (Objects.requireNonNull(comboBoxValue)) {
             case "Wi-Fi":
                 if (tabbedPaneWiFi.getSelectedIndex() == 0) {
                     selected = tableInterfacesWiFi.getSelectedRow();
@@ -768,7 +877,7 @@ public class HomePage {
         int selectedRow;
         int lastCol;
 
-        switch ((String) comboBoxInterfaces.getSelectedItem()) {
+        switch ((String) Objects.requireNonNull(comboBoxInterfaces.getSelectedItem())) {
 //            case "All interfaces":
 //                selectedRow = interfaceTable.getSelectedRow();
 //                lastCol = interfaceTable.getColumnCount() - 1;
@@ -779,7 +888,7 @@ public class HomePage {
 //                }
 //                break;
             case "Wi-Fi":
-                if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Interfaces") == 0) {
+                if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
                     selectedRow = tableInterfacesWiFi.getSelectedRow();
                     lastCol = tableInterfacesWiFi.getColumnCount() - 1;
                     try {
@@ -796,7 +905,7 @@ public class HomePage {
                     selectedRow = tableInterfacesBridge.getSelectedRow();
                     lastCol = tableInterfacesBridge.getColumnCount() - 1;
                     try {
-                        System.out.println(apiClient.estadoInterface(tableInterfacesBridge.getValueAt(selectedRow, 0).toString(), (Boolean) tableInterfacesBridge.getValueAt(selectedRow, lastCol)));
+                        apiClient.estadoInterface(tableInterfacesBridge.getValueAt(selectedRow, 0).toString(), (Boolean) tableInterfacesBridge.getValueAt(selectedRow, lastCol));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -819,7 +928,7 @@ public class HomePage {
         String comboBoxValue = (String) comboBoxInterfaces.getSelectedItem();
         DefaultTableModel model;
 
-        switch (comboBoxValue) {
+        switch (Objects.requireNonNull(comboBoxValue)) {
             case "All interfaces":
                 addInterfaceButton.setVisible(false);
                 deleteInterfaceButton.setVisible(false);
@@ -827,7 +936,7 @@ public class HomePage {
                 interfacesAllPanel.setVisible(true);
                 tabbedPaneWiFi.setVisible(false);
                 tabbedPaneBridge.setVisible(false);
-                editBridgeButton.setVisible(false);
+                editInterfacesButton.setVisible(false);
                 try {
                     String[] colsAll = {"ID", "Name", "Running", "Disabled"};
                     model = new DefaultTableModel(colsAll, 0);
@@ -852,49 +961,13 @@ public class HomePage {
                 addInterfaceButton.setVisible(true);
                 deleteInterfaceButton.setVisible(true);
                 ableDisableInterfaceButton.setVisible(true);
+                editInterfacesButton.setVisible(true);
                 interfacesAllPanel.setVisible(false);
                 if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
-                    try {
-                        String[] colsWiFi = {"ID", "Name", "Master Interface", "Mode", "SSID", "Band", "Channel Width", "Disabled"};
-                        model = new DefaultTableModel(colsWiFi, 0); // ← colunas próprias para WiFi
-                        for (GetInterfacesWiFi interf : apiClient.GetInterfacesWiFi()) {
-                            Object[] row = {
-                                    interf.id,
-                                    interf.name,
-                                    interf.master_interface,
-                                    interf.mode,
-                                    interf.ssid,
-                                    interf.band,
-                                    interf.channel_width,
-                                    interf.disabled
-                            };
-                            model.addRow(row);
-                        }
-                        tabbedPaneWiFi.setVisible(true);
-                        tabbedPaneBridge.setVisible(false);
-                        formatTable(tableInterfacesWiFi, model);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    fillWifiInterfacesTable(false);
                 }else {
                     ableDisableInterfaceButton.setVisible(false);
-                    try {
-                        String[] colsWiFi = {"ID", "Name", "Disabled"};
-                        model = new DefaultTableModel(colsWiFi, 0); // ← colunas próprias para WiFi
-                        for (GetProfiles interf : apiClient.GetProfiles()) {
-                            Object[] row = {
-                                    interf.id,
-                                    interf.name,
-                                    interf.disabled
-                            };
-                            model.addRow(row);
-                        }
-                        tabbedPaneWiFi.setVisible(true);
-                        tabbedPaneBridge.setVisible(false);
-                        formatTable(tableSP, model);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    fillWifiSpTable(false);
                 }
                 break;
 
@@ -902,7 +975,7 @@ public class HomePage {
                 addInterfaceButton.setVisible(true);
                 deleteInterfaceButton.setVisible(true);
                 ableDisableInterfaceButton.setVisible(true);
-                editBridgeButton.setVisible(true);
+                editInterfacesButton.setVisible(true);
                 interfacesAllPanel.setVisible(false);
                 if (tabbedPaneBridge.getSelectedIndex() == 0) {
                     fillBridgeInterfacesTable(false);
@@ -916,15 +989,16 @@ public class HomePage {
 
     private void btnEditBridgeButton(ActionEvent actionEvent) {
         clearTableSelection(TablesTypes.BRIDGE);
-        boolean isEdited = editBridgeButton.isSelected();
+        boolean isEdited = editInterfacesButton.isSelected();
 
         //System.out.println(isEdited);
         if (isEdited) {
-            editBridgeButton.setText("Disable Edit");
+            editInterfacesButton.setText("Disable Edit");
         }else {
-            editBridgeButton.setText("Enable Edit");
+            editInterfacesButton.setText("Enable Edit");
         }
         fillBridgeInterfacesTable(isEdited);
+        fillBridgePortsTable(isEdited);
         clearTableSelection(TablesTypes.BRIDGE);
     }
 
@@ -1144,34 +1218,44 @@ public class HomePage {
                 model.addRow(row);
             }
             tabbedPaneBridge.setVisible(true);
+            tabbedPaneWiFi.setVisible(false);
             formatTable(tablePortsBridge, model);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-
         JComboBox<String> comboBox = new JComboBox<>();
         comboBox.addItem("false");
         comboBox.addItem("true");
-        tableInterfacesBridge.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(comboBox));
+        tablePortsBridge.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(comboBox));
 
+        JComboBox<String> comboBoxBridge = new JComboBox<>();
         JComboBox<String> comboBoxInterfaces = new JComboBox<>();
         try {
-            List<GetPorts> interfacesAtuais = apiClient.getBridgePorts();
-            for (GetPorts ports : interfacesAtuais){
-                comboBoxInterfaces.addItem(ports.interfaceAtual);
+            for (getInterfaceBridge interf : apiClient.getBridgeInterfaces()){
+                comboBoxBridge.addItem(interf.name);
+            }
+            for (GetPorts port : apiClient.getBridgePorts()){
+                comboBoxInterfaces.addItem(port.interfaceAtual);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        tableInterfacesBridge.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBoxInterfaces));
+        tablePortsBridge.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(comboBoxBridge));
+        tablePortsBridge.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(comboBoxInterfaces));
 
+
+        tablePortsBridge.putClientProperty("terminateEditOnFocusLost", true);
         //Este listener é o responsavel por esta à espera que cliques no enter ou fora da box
         tablePortsBridge.getModel().addTableModelListener(e -> {
             if (e.getType() == TableModelEvent.UPDATE) {
                 int row = e.getFirstRow();
                 int col = e.getColumn();
                 if (col == TableModelEvent.ALL_COLUMNS) return;
+
+                comboBox.setSelectedItem(tablePortsBridge.getValueAt(row, col));
+                comboBoxBridge.setSelectedItem(tablePortsBridge.getValueAt(row, col));
+                comboBoxInterfaces.setSelectedItem(tablePortsBridge.getValueAt(row, col));
 
                 AddBridgePort interf = new AddBridgePort();
                 interf.bridge = tablePortsBridge.getValueAt(row, 1).toString();
@@ -1187,6 +1271,71 @@ public class HomePage {
                 }
             }
         });
+    }
+
+
+    private void fillWifiSpTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(4);
+        }
+        try {
+            String[] colsWiFi = {"ID", "Name", "Disabled"};
+            DefaultTableModel model = new DefaultTableModel(colsWiFi, 0){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return editableColuns.contains(column);
+                }
+            };
+            for (GetProfiles interf : apiClient.GetProfiles()) {
+                Object[] row = {
+                        interf.id,
+                        interf.name,
+                        interf.disabled
+                };
+                model.addRow(row);
+            }
+            tabbedPaneWiFi.setVisible(true);
+            tabbedPaneBridge.setVisible(false);
+            formatTable(tableSP, model);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private void fillWifiInterfacesTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(1);
+            editableColuns.add(4);
+        }
+        try {
+            String[] colsWiFi = {"ID", "Name", "Master Interface", "Mode", "SSID", "Band", "Channel Width", "Disabled"};
+            DefaultTableModel model = new DefaultTableModel(colsWiFi, 0){
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return editableColuns.contains(column);
+                }
+            };
+            for (GetInterfacesWiFi interf : apiClient.GetInterfacesWiFi()) {
+                Object[] row = {
+                        interf.id,
+                        interf.name,
+                        interf.master_interface,
+                        interf.mode,
+                        interf.ssid,
+                        interf.band,
+                        interf.channel_width,
+                        interf.disabled
+                };
+                model.addRow(row);
+            }
+            tabbedPaneWiFi.setVisible(true);
+            tabbedPaneBridge.setVisible(false);
+            formatTable(tableInterfacesWiFi, model);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void fillBridgeInterfacesTable(boolean isEditing){
@@ -1215,7 +1364,7 @@ public class HomePage {
                 model.addRow(row);
             }
             tabbedPaneBridge.setVisible(true);
-            //tabbedPaneWiFi.setVisible(false);
+            tabbedPaneWiFi.setVisible(false);
             formatTable(tableInterfacesBridge, model);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -1245,7 +1394,7 @@ public class HomePage {
 
                 //faz a chamada à API para atualizar o DHCP Network editado
                 try {
-                    System.out.println(apiClient.editInterfaceBridge(interf.id, interf.name,  state));
+                    apiClient.editInterfaceBridge(interf.id, interf.name, state);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }

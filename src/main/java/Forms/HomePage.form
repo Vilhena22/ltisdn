@@ -619,7 +619,7 @@
                   <text value="Delete"/>
                 </properties>
               </component>
-              <component id="5e7f" class="javax.swing.JToggleButton" binding="editBridgeButton">
+              <component id="5e7f" class="javax.swing.JToggleButton" binding="editInterfacesButton">
                 <constraints>
                   <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
@@ -647,10 +647,10 @@
               </component>
               <component id="45448" class="javax.swing.JButton" binding="ableDisableStaticRouteButton" default-binding="true">
                 <constraints>
-                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <text value="Dis / Able"/>
+                  <text value="Able / Disable"/>
                 </properties>
               </component>
               <component id="1b578" class="javax.swing.JButton" binding="deleteStaticRouteButton" default-binding="true">
@@ -674,6 +674,14 @@
                   </component>
                 </children>
               </scrollpane>
+              <component id="18d59" class="javax.swing.JToggleButton" binding="editRouteButton">
+                <constraints>
+                  <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Enable Edit"/>
+                </properties>
+              </component>
               <hspacer id="b0996">
                 <constraints>
                   <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
