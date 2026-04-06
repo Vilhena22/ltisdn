@@ -28,7 +28,7 @@ public class LoginPage {
     private JPanel userPanel;
     private JPanel passPanel;
     private JLabel singLabel;
-    private JFrame owner;
+    private final JFrame owner;
     private final boolean isThemeDark;
     private ApiClient apiClient;
 
@@ -134,7 +134,7 @@ public class LoginPage {
     private void login(ActionEvent actionEvent) {
         userTextField.setText("admin");
         passwordField.setText("microtik");
-        hostFormattedTextField.setText("192.168.1.72");
+        hostFormattedTextField.setText("192.168.56.105");
         String username = userTextField.getText();
         String password = passwordField.getText();
         String host = hostFormattedTextField.getText();
@@ -177,7 +177,7 @@ public class LoginPage {
                     router.host = host;
                     router.username = username;
                     router.password = password;
-                    RouterDAO dao  = new RouterDAO().getInstance();
+                    RouterDAO dao  = RouterDAO.getInstance();
                     if (!dao.checkRouter(router)) {
                         dao.saveRouter(router);
                     }
@@ -218,12 +218,9 @@ public class LoginPage {
 
         //Set Background Colors
         //Panels Style
-        Color buttonColor = new Color(255 - backColor.getRed(), 255 - backColor.getGreen(), 255 - backColor.getBlue(), 15);
 
-        // hoverColor = 10~15% mais claro ou escuro dependendo da luminosidade
-        float[] hsb = Color.RGBtoHSB(backColor.getRed(), backColor.getGreen(), backColor.getBlue(), null);
-        float brightness = Math.min(hsb[2] * 1.15f, 1.0f); // +15% brilho
-        Color hoverColor = Color.getHSBColor(hsb[0], hsb[1], brightness);
+        Color buttonColor = new Color(16, 83, 138);
+        Color hoverColor = new Color(102, 210, 170);
 
         JComponent[] components = {
             loginPanel,deviceTable,scrollPanel,panel1,hostFormattedTextField,userTextField,passwordField,
@@ -237,8 +234,6 @@ public class LoginPage {
             component.setFont(font);
         }
 
-
-
         // --- Botões ---
         AbstractButton[] buttons = {
                 loginButton,clearFieldsButton
@@ -246,7 +241,7 @@ public class LoginPage {
 
         for (AbstractButton btn : buttons) {
             btn.setBackground(buttonColor);
-            btn.setForeground(textColor);
+            btn.setForeground(Color.WHITE);
             btn.setFocusPainted(false);
             btn.setBorderPainted(false);
             btn.setOpaque(true);
@@ -256,9 +251,9 @@ public class LoginPage {
             // Aplica hover automático
             applyHoverEffect(btn, buttonColor, hoverColor);
 
-            Image logo = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/logo.png"))).getImage().getScaledInstance(173, 133, Image.SCALE_SMOOTH);
-            logoLabel.setIcon(new ImageIcon(logo));
         }
+        Image logo = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/logo.png"))).getImage().getScaledInstance(173, 133, Image.SCALE_SMOOTH);
+        logoLabel.setIcon(new ImageIcon(logo));
         TitledBorder border = (TitledBorder) Objects.requireNonNull(scrollPanel).getBorder();
         border.setTitleColor(textColor);
         border.setTitleFont(new Font("JetBrains Mono", Font.PLAIN,25));
@@ -272,10 +267,12 @@ public class LoginPage {
             @Override
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(hover);
+                button.setForeground(Color.BLACK);
             }
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setBackground(normal);
+                button.setForeground(Color.WHITE);
             }
         });
     }

@@ -5,5 +5,7 @@ public enum TablesTypes {
     DHCP,
     BRIDGE,
     WIFI,
-    ROUTE
+    ROUTE,
+    WIREGUARD,
+    ADDRESS
 }

@@ -10,8 +10,9 @@ public class Dns {
     @JsonIgnore
     private String id;
     @JsonProperty(value = "address-list-extra-time", access = JsonProperty.Access.READ_ONLY)
+    @JsonIgnore
     public String addressListExtraTime;
-    @JsonProperty(value = "allow-remote-requests", access = JsonProperty.Access.READ_ONLY)
+    @JsonProperty("allow-remote-requests")
     public String allowRemoteRequests;
     @JsonProperty("cache-max-ttl")
     public String cacheMaxTtl;
@@ -21,10 +22,13 @@ public class Dns {
     @JsonIgnore
     public String cacheUsed;
     @JsonProperty("doh-max-concurrent-queries")
+    @JsonIgnore
     public Integer dohMaxConcurrentQueries;
     @JsonProperty("doh-max-server-connections")
+    @JsonIgnore
     public Integer dohMaxServerConnections;
     @JsonProperty("doh-timeout")
+    @JsonIgnore
     public String dohTimeout;
     @JsonProperty(value = "dynamic-servers", access =  JsonProperty.Access.READ_ONLY)
     @JsonIgnore
@@ -45,7 +49,7 @@ public class Dns {
     @JsonProperty("use-doh-server")
     public String useDohServer;
     @JsonProperty("verify-doh-cert")
-    public String verifyDohCert;
+    public boolean verifyDohCert;
     public String vrf;
 
 }

@@ -6,20 +6,16 @@ import Models.Interfaces.bridge.ports.GetPorts;
 
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.List;
-
 public class addBridgePort extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
     private JComboBox comboBoxBridgeName;
     private JComboBox comboBoxInterface;
-    private final JFrame owner;
     private final ApiClient apiClient;
 
     public addBridgePort(JFrame owner,ApiClient apiClient) {
         super(owner, "Add Bridge Port", true);
-        this.owner = owner;
         this.apiClient = apiClient;
         setContentPane(contentPane);
         setModal(true);
@@ -37,17 +33,9 @@ public class addBridgePort extends JDialog {
             throw new RuntimeException(e);
         }
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -58,11 +46,7 @@ public class addBridgePort extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     private void onOK() {
@@ -70,7 +54,7 @@ public class addBridgePort extends JDialog {
             apiClient.addBridgePort((String) comboBoxBridgeName.getSelectedItem(), (String) comboBoxInterface.getSelectedItem());
         } catch (Exception e) {
             throw new RuntimeException(e);
-        };
+        }
         dispose();
     }
 

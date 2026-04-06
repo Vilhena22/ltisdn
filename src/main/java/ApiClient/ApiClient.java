@@ -11,6 +11,7 @@ import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.Dns;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
+import Models.Dns.Vrf;
 import Models.Interfaces.bridge.interfaces.addNewInterfaceBridge;
 import Models.Interfaces.bridge.interfaces.getInterfaceBridge;
 import Models.Interfaces.bridge.ports.AddBridgePort;
@@ -23,15 +24,21 @@ import Models.Interfaces.wifi.securityProfiles.GetProfiles;
 import Models.Route.Routes;
 import Models.System.SystemResources;
 import Models.System.SystemVersion;
+import Models.Wireguard.ClientConfig;
+import Models.Wireguard.InterfaceWG;
+import Models.Wireguard.Peer;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -119,35 +126,156 @@ public class ApiClient {
         );
     }
 
-    public String postDnsConfig() throws Exception {
+    public ApiResponse postDnsConfig(Dns dnsConfig) throws Exception {
 
-        //Cria o objeto para enviar
         ObjectMapper mapper = new ObjectMapper();
-        Dns dns = new Dns();
-        dns.addressListExtraTime ="0s";
-        dns.allowRemoteRequests = "true";
-        dns.cacheMaxTtl= "1w";
-        dns.cacheSize= "1024";
-        dns.verifyDohCert = "no";
-        dns.dohMaxConcurrentQueries =50;
-        dns.dohMaxServerConnections = 5;
-        dns.dohTimeout = "5s";
-        dns.maxConcurrentQueries ="100";
-        dns.maxConcurrentTcpSessions ="20";
-        dns.maxUdpPacketSize ="4096";
-        dns.queryServerTimeout = "2s";
-        dns.queryTotalTimeout = "10s";
-        dns.vrf = "main";
-
         //Converte o objeto em Json
-        String jsonString = mapper.writeValueAsString(dns);
+        String jsonString = mapper.writeValueAsString(dnsConfig);
 
-        //Realiza o post
-        String status = sendRequestPost("/ip/dns/set",  jsonString);
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dns/set", jsonString));
 
-        return status;
+        return getApiResponse(mapper, node);
 
     }
+
+    public List<Vrf> getVrfTables() throws Exception {
+        String json = sendRequestGet("/ip/vrf");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, Vrf.class)
+        );
+    }
+
+
+    public List<InterfaceWG> getInterfacesWireGuard() throws Exception {
+        String json = sendRequestGet("/interface/wireguard");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, InterfaceWG.class));
+    }
+
+
+    public ApiResponse postWireguardInterface(InterfaceWG interfaceWG) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(interfaceWG);
+        String stringResponse =  sendRequestPost("/interface/wireguard/add",  jsonString);
+        return mapper.readValue(stringResponse,ApiResponse.class);
+    }
+
+    public void dis_ableWireguarInterface(String id, boolean disabled) throws Exception{
+
+        boolean newState = !disabled;
+        InterfaceWG interfaceWG = new InterfaceWG();
+        interfaceWG.id = id;
+        interfaceWG.disabled = newState;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(interfaceWG);
+
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/interface/wireguard/set", jsonString));
+
+        getApiResponse(mapper, node);
+    }
+
+    public ApiResponse postEditWireguardInterface(InterfaceWG interfaceWG) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(interfaceWG);
+        JsonNode node = mapper.readTree(sendRequestPost("/interface/wireguard/set",  jsonString));
+
+        return getApiResponse(mapper, node);
+    }
+
+
+    public Integer deleteWireguardInterface(String interfaceID) throws Exception {
+        return sendRequestDelete("/interface/wireguard/"+interfaceID);
+    }
+
+
+    public List<Peer> getPeersWireGuard() throws Exception {
+        String json = sendRequestGet("/interface/wireguard/peers");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, Peer.class));
+    }
+
+    public ApiResponse postWireguardPeer(Peer newPeer) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(newPeer);
+        String stringResponse =  sendRequestPost("/interface/wireguard/peers/add",  jsonString);
+        return mapper.readValue(stringResponse,ApiResponse.class);
+    }
+
+    public void postEditWireguardPeer(Peer newPeer) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(newPeer);
+        JsonNode node = mapper.readTree(sendRequestPost("/interface/wireguard/peers/set",  jsonString));
+
+        getApiResponse(mapper, node);
+    }
+
+    public Integer deleteWireguardPeer(String interfaceID) throws Exception {
+        return sendRequestDelete("/interface/wireguard/peers/"+interfaceID);
+    }
+
+    public ApiResponse dis_ableWireguarPeer(String id, boolean disabled) throws Exception{
+
+        boolean newState = !disabled;
+        Peer peer = new Peer();
+        peer.id = id;
+        peer.disabled = newState;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(peer);
+
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/interface/wireguard/peers/set",jsonString));
+
+        return getApiResponse(mapper, node);
+    }
+
+
+    public ArrayList<ClientConfig> getWireguardClinentConfig(String id) throws Exception {
+        String json = "{\".id\": \""+id+"\"}";
+        String response = sendRequestPost("/interface/wireguard/peers/show-client-config",json);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                response,
+                mapper.getTypeFactory().constructCollectionType(ArrayList.class, ClientConfig.class));
+    }
+
+
+
+    private ApiResponse getApiResponse(ObjectMapper mapper, JsonNode node) throws JsonProcessingException {
+        ApiResponse response;
+
+        if (node.isArray()) {
+            // Caso sucesso: lista (possivelmente vazia)
+            if (node.isEmpty()) {
+                response = new ApiResponse();
+                response.error = 200;
+                response.message = "OK";
+            } else {
+                // Se vier lista com conteúdo
+                response = mapper.treeToValue(node.get(0), ApiResponse.class);
+            }
+        } else {
+            // Caso erro: objeto
+            response = mapper.treeToValue(node, ApiResponse.class);
+        }
+
+
+        return response;
+    }
+
 
     public List<SystemVersion> getSystemVersion() throws Exception {
         String json = sendRequestPost("/system/package/update/check-for-updates","{}");
@@ -185,24 +313,7 @@ public class ApiClient {
         String jsonString = mapper.writeValueAsString(dhcpNetwork);
 
         JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-server/network/add",jsonString));
-        ApiResponse response;
-
-        if (node.isArray()) {
-            // Caso sucesso: lista (possivelmente vazia)
-            if (node.isEmpty()) {
-                response = new ApiResponse();
-                response.error = 200;
-                response.message = "OK";
-            } else {
-                // Se vier lista com conteúdo
-                response = mapper.treeToValue(node.get(0), ApiResponse.class);
-            }
-        } else {
-            // Caso erro: objeto
-            response = mapper.treeToValue(node, ApiResponse.class);
-        }
-
-        return response;
+        return getApiResponse(mapper, node);
     }
 
     public Integer deleteDhcpNetwork(String id) throws Exception {
@@ -217,25 +328,7 @@ public class ApiClient {
 
         JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-server/network/set",jsonString));
 
-        ApiResponse response;
-
-        if (node.isArray()) {
-            // Caso sucesso: lista (possivelmente vazia)
-            if (node.isEmpty()) {
-                response = new ApiResponse();
-                response.error = 200;
-                response.message = "OK";
-            } else {
-                // Se vier lista com conteúdo
-                response = mapper.treeToValue(node.get(0), ApiResponse.class);
-            }
-        } else {
-            // Caso erro: objeto
-            response = mapper.treeToValue(node, ApiResponse.class);
-        }
-
-
-        return response;
+        return getApiResponse(mapper, node);
     }
 
         //Leases
@@ -607,9 +700,9 @@ public class ApiClient {
         return gson.fromJson(endpoint, listType);
     }
 
-//    public Integer deleteBridgePort(String id) throws Exception {
-//        return sendRequestDelete("/interface/bridge/port/" + id);
-//    }
+    public Integer deleteBridgePort(String id) throws Exception {
+        return sendRequestDelete("/interface/bridge/port/" + id);
+    }
 
     public String addBridgePort(String bridgeName, String interfaceName) throws Exception {
 
@@ -657,9 +750,9 @@ public class ApiClient {
         return gson.fromJson(endpoint, listType);
     }
 
-//    public Integer deleteInterfaceBridge(String id) throws Exception {
-//        return sendRequestDelete("/interface/bridge/" + id);
-//    }
+    public Integer deleteInterfaceBridge(String id) throws Exception {
+        return sendRequestDelete("/interface/bridge/" + id);
+    }
 
     public String addInterfaceBridge(String name, boolean disabled) throws Exception {
 
