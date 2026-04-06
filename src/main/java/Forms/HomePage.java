@@ -4,6 +4,7 @@ import ApiClient.ApiClient;
 import Dialogs.Add.*;
 import Dialogs.Edit.UpdateIP;
 import Dialogs.GenerateClientConfig;
+import Dialogs.SetupDnsConfig;
 import Dialogs.SetupWireguardConnection;
 import Models.Address.GetAddress;
 import Models.Dhcp.Clients.DhcpClient;
@@ -130,16 +131,15 @@ public class HomePage {
     private JPanel updatePanel;
     private JButton updateButton;
     private JLabel chanelLabel;
-    private JLabel instaLabel;
+    private JLabel installedLabel;
     private JLabel latestLabel;
     private JLabel statusLabel;
     private JLabel status;
     private JLabel latest;
-    private JLabel instaled;
+    private JLabel installed;
     private JLabel chanel;
     private JButton logoutButton;
-    private JToggleButton editBridgeButton;
-    private JSeparator deviderCheck;
+    private JSeparator dividerCheck;
     private JPanel wireGuardPanel;
     private JTabbedPane wireguardTabbedPane;
     private JTable wireInterfacesTable;
@@ -153,6 +153,8 @@ public class HomePage {
     private JButton generateConfButton;
     private JToggleButton editInterfacesButton;
     private JToggleButton editRouteButton;
+    private JButton setupDnsConfigButton;
+    private JToggleButton editAddressButton;
     private final ApiClient apiClient;
     private final boolean isDarkMode;
 
@@ -190,13 +192,17 @@ public class HomePage {
             throw new RuntimeException(e);
         }
 
-
+        //Navbar Buttons Functions
         logoutButton.addActionListener(this::btnLogout);
         homeButton.addActionListener(this::btnShowHomePanel);
         dnsButton.addActionListener(this::btnShowDnsPanel);
         dhcpButton.addActionListener(this::btnShowDhcpPanel);
-
         wireguardButton.addActionListener(this::btnShowWireguardPanel);
+        addressButton.addActionListener(this::btnShowAddressPanel);
+        interfaceButton.addActionListener(this::btnShowInterfacePanel);
+        routeButton.addActionListener(this::btnShowRoutePanel);
+
+        //Wireguard Buttons Functions
         editWireGuardButton.addActionListener(this::btnEditWireguard);
         addWireguardButton.addActionListener(this::btnAddWireguard);
         disAbleWireguardButton.addActionListener(this::btnDisAbleWireguard);
@@ -204,43 +210,53 @@ public class HomePage {
         deleteWireButton.addActionListener(this::btnDeleteWireguard);
         generateConfButton.addActionListener(this::btnGenerateConfig);
 
+        //DNS Buttons Functions
         clearCacheButton.addActionListener(this::btnClearCache);
         addRecordButton.addActionListener(this::btnAddRecord);
         editRecordsToggleButton.addActionListener(this::btnEditRecord);
         deleteRecordButton.addActionListener(this::btnDeleteRecord);
         deleteDhcpButton.addActionListener(this::btnDeleteButton);
-        addressButton.addActionListener(this::btnShowAddressPanel);
+        setupDnsConfigButton.addActionListener(this::btnConfigDns);
+
+        //Address Buttons Functions
         addIPButton.addActionListener(this::btnAddIP);
         ableDisableAddrButton.addActionListener(this::btnAbleDisableAddr);
         removeIPButton.addActionListener(this::btnRemoveIP);
         UpdateIPButton.addActionListener(this::btnUpdateIP);
-        interfaceButton.addActionListener(this::btnShowInterfacePanel);
+        editAddressButton.addActionListener(this::btnEditAddress);
+
+        //Interface Buttons Functions
+
         ableDisableInterfaceButton.addActionListener(this::btnAbleDisableInterface);
         deleteInterfaceButton.addActionListener(this::btnDeleteInterface);
         addInterfaceButton.addActionListener(this::btnAddInterface);
+
+        //DHCP Buttons Functions
         editDhcpButton.addActionListener(this::btnEditDhcpButton);
         addNetworkButton.addActionListener(this::btnAddPool);
         addLeaseButton.addActionListener(this::btnAddLease);
         addClientButton.addActionListener(this::btnAddClient);
         addServerButton.addActionListener(this::btnAddServer);
-        routeButton.addActionListener(this::btnShowRoutePanel);
+
+        //Route Buttons Functions
+
         deleteStaticRouteButton.addActionListener(this::btnRouteDelete);
         addStaticRouteButton.addActionListener(this::btnRouteAdd);
         ableDisableStaticRouteButton.addActionListener(this::btnRouteAbleDisabled);
-        editInterfacesButton.addActionListener(this::btnEditBridgeButton);
+        editInterfacesButton.addActionListener(this::btnEditInterfacesButton);
         editRouteButton.addActionListener(this::btnEditRouteButton);
 
         wireguardTabbedPane.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked (MouseEvent e){
                 super.mouseClicked(e);
+                clearTableSelection(TablesTypes.WIREGUARD);
                 switch (wireguardTabbedPane.getSelectedIndex()) {
                     case 0:
                         generateConfButton.setVisible(false);
                         generateConfButton.setEnabled(false);
                         deleteWireButton.setEnabled(false);
                         disAbleWireguardButton.setEnabled(false);
-                        clearTableSelection(TablesTypes.WIREGUARD);
                         fillInterfacesWireGuardTable(false);
                         break;
                     case 1:
@@ -248,7 +264,6 @@ public class HomePage {
                         deleteWireButton.setEnabled(false);
                         disAbleWireguardButton.setEnabled(false);
                         generateConfButton.setVisible(true);
-                        clearTableSelection(TablesTypes.WIREGUARD);
                         fillPeersWireGuardTable(false);
                         break;
                 }
@@ -337,13 +352,6 @@ public class HomePage {
     });
 
         //Cria Listneers para quando tiver itens selecionados o botao delete ativa
-
-        addrTable.getSelectionModel().addListSelectionListener(e -> {
-            boolean selected = addrTable.getSelectedRow() != -1;
-            UpdateIPButton.setEnabled(selected);
-            ableDisableAddrButton.setEnabled(selected);
-        });
-
         tableInterfacesWiFi.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return; // evita eventos duplicados
 
@@ -467,7 +475,6 @@ public class HomePage {
                     deleteWireButton.setEnabled(isSelected);
                     generateConfButton.setEnabled(isSelected);
                 }
-                clearTableSelection(TablesTypes.WIREGUARD);
             }
         });
 
@@ -486,7 +493,7 @@ public class HomePage {
                     disAbleWireguardButton.setEnabled(isSelected);
                     deleteWireButton.setEnabled(isSelected);
                 }
-                clearTableSelection(TablesTypes.WIREGUARD);
+
             }
         });
 
@@ -504,7 +511,7 @@ public class HomePage {
                             if (!list.isEmpty()) {
                                 systemVersion = list.getLast();
                                 chanel.setText(systemVersion.channel);
-                                instaled.setText(systemVersion.installedVersion);
+                                installed.setText(systemVersion.installedVersion);
                                 chanel.setText(systemVersion.channel);
                                 if (systemVersion.latestVersion != null) {
                                     latest.setText(systemVersion.latestVersion);
@@ -513,7 +520,7 @@ public class HomePage {
                                 }
                                 checkUpdateButton.setText("Close");
                                 updatePanel.setVisible(true);
-                                deviderCheck.setVisible(true);
+                                dividerCheck.setVisible(true);
                             }
                         } catch (Exception ex) {
                             throw new RuntimeException(ex);
@@ -522,7 +529,7 @@ public class HomePage {
                 }else {
                     checkUpdateButton.setText("Check Updates");
                     updatePanel.setVisible(false);
-                    deviderCheck.setVisible(false);
+                    dividerCheck.setVisible(false);
                 }
             }
         });
@@ -531,14 +538,23 @@ public class HomePage {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                int row = addrTable.getSelectedRow();
-                if (addrTable.getValueAt(row, 3).equals(false)){
-                    ableDisableAddrButton.setText("Enable");
-                }else {
-                    ableDisableAddrButton.setText("Disable");
+                boolean isSelected = addrTable.getSelectedRow() != -1;
+                if (isSelected) {
+                    String state = addrTable.getValueAt(addrTable.getSelectedRow(),3).toString();
+                    if(state.compareTo("false") == 0){
+                        ableDisableAddrButton.setText("Disable Address");
+                    }else{
+                        ableDisableAddrButton.setText("Enable Address");
+                    }
+                    UpdateIPButton.setEnabled(isSelected);
+                    ableDisableAddrButton.setEnabled(isSelected);
+                    ableDisableAddrButton.setEnabled(isSelected);
                 }
+
             }
         });
+
+
         tableRoute.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -552,6 +568,13 @@ public class HomePage {
                 }
             }
         });
+    }
+
+    private void btnConfigDns(ActionEvent actionEvent) {
+        SetupDnsConfig dnsConfig = new SetupDnsConfig(owner,apiClient);
+        dnsConfig.pack();
+        dnsConfig.setLocationRelativeTo(owner);
+        dnsConfig.setVisible(true);
     }
 
     private void btnEditRouteButton(ActionEvent actionEvent) {
@@ -656,26 +679,24 @@ public class HomePage {
     }
 
     private void btnEditWireguard(ActionEvent actionEvent) {
-         clearTableSelection(TablesTypes.WIREGUARD);
-            boolean isEdited = editWireGuardButton.isSelected();
-            System.out.println(isEdited);
-            if (isEdited) {
-                editWireGuardButton.setText("Disable Edit");
-            }else {
-                editWireGuardButton.setText("Enable Edit");
-            }
-            switch (wireguardTabbedPane.getSelectedIndex()) {
-                case 0:
-                    fillInterfacesWireGuardTable(isEdited);
-                    break;
-                case 1:
-                    fillPeersWireGuardTable(isEdited);
-                    break;
-            }
-            clearTableSelection(TablesTypes.WIREGUARD);
+        boolean isEdited = editWireGuardButton.isSelected();
+        System.out.println(isEdited);
+        if (isEdited) {
+            editWireGuardButton.setText("Disable Edit");
+        }else {
+            editWireGuardButton.setText("Enable Edit");
+        }
+        switch (wireguardTabbedPane.getSelectedIndex()) {
+            case 0:
+                fillInterfacesWireGuardTable(isEdited);
+                break;
+            case 1:
+                fillPeersWireGuardTable(isEdited);
+                break;
+        }
+        clearTableSelection(TablesTypes.WIREGUARD);
 
     }
-
 
     private void btnLogout(ActionEvent actionEvent) {
         owner.setContentPane(new LoginPage(isDarkMode,owner).getMainPanel());
@@ -723,7 +744,6 @@ public class HomePage {
         }
     }
 
-
     private void btnShowWireguardPanel(ActionEvent actionEvent) {
         routePanel.setVisible(false);
         cpuPanel.setVisible(false);
@@ -734,7 +754,7 @@ public class HomePage {
         statsPanel.setVisible(false);
         wireGuardPanel.setVisible(true);
         updatePanel.setVisible(false);
-        deviderCheck.setVisible(false);
+        dividerCheck.setVisible(false);
 
 
         fillInterfacesWireGuardTable(false);
@@ -751,7 +771,7 @@ public class HomePage {
             statsPanel.setVisible(false);
             wireGuardPanel.setVisible(false);
             updatePanel.setVisible(false);
-            deviderCheck.setVisible(false);
+            dividerCheck.setVisible(false);
 
             getStaticRoutes();
         }catch (Exception e){
@@ -878,15 +898,6 @@ public class HomePage {
         int lastCol;
 
         switch ((String) Objects.requireNonNull(comboBoxInterfaces.getSelectedItem())) {
-//            case "All interfaces":
-//                selectedRow = interfaceTable.getSelectedRow();
-//                lastCol = interfaceTable.getColumnCount() - 1;
-//                try {
-//                    apiClient.estadoInterface(interfaceTable.getValueAt(selectedRow, 0).toString(), (Boolean) interfaceTable.getValueAt(selectedRow, lastCol));
-//                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-//                }
-//                break;
             case "Wi-Fi":
                 if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0) {
                     selectedRow = tableInterfacesWiFi.getSelectedRow();
@@ -987,7 +998,7 @@ public class HomePage {
 
     }
 
-    private void btnEditBridgeButton(ActionEvent actionEvent) {
+    private void btnEditInterfacesButton(ActionEvent actionEvent) {
         clearTableSelection(TablesTypes.BRIDGE);
         boolean isEdited = editInterfacesButton.isSelected();
 
@@ -1009,8 +1020,20 @@ public class HomePage {
             update.pack();
             update.setLocationRelativeTo(owner);
             update.setVisible(true);
-            AddressTable();
+            AddressTable(false);
         }
+    }
+
+
+    private void btnEditAddress(ActionEvent actionEvent) {
+        clearTableSelection(TablesTypes.ADDRESS);
+        boolean isEdited = editAddressButton.isSelected();
+        if (isEdited) {
+            editAddressButton.setText("Disable Edit");
+        }else {
+            editAddressButton.setText("Enable Edit");
+        }
+        AddressTable(isEdited);
     }
 
     private void btnRemoveIP(ActionEvent actionEvent) {
@@ -1023,17 +1046,17 @@ public class HomePage {
                 throw new RuntimeException(e);
             }
         }
-        AddressTable();
+        AddressTable(false);
     }
 
     private void btnAbleDisableAddr(ActionEvent actionEvent) {
         int selectedRow = addrTable.getSelectedRow();
         try {
-            apiClient.EstadoIPAddress(addrTable.getValueAt(selectedRow, 0).toString(), (Boolean) addrTable.getValueAt(selectedRow, 3));
+            System.out.println( apiClient.EstadoIPAddress(addrTable.getValueAt(selectedRow, 0).toString(), (Boolean) addrTable.getValueAt(selectedRow, 3)));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        AddressTable();
+        AddressTable(false);
     }
 
     private void btnAddIP(ActionEvent actionEvent) {
@@ -1041,7 +1064,7 @@ public class HomePage {
         novoIP.pack();
         novoIP.setLocationRelativeTo(owner);
         novoIP.setVisible(true);
-        AddressTable();
+        AddressTable(false);
     }
 
     private void btnShowAddressPanel(ActionEvent actionEvent) {
@@ -1056,8 +1079,8 @@ public class HomePage {
         UpdateIPButton.setEnabled(false);
         updatePanel.setVisible(false);
         wireGuardPanel.setVisible(false);
-        deviderCheck.setVisible(false);
-        AddressTable();
+        dividerCheck.setVisible(false);
+        AddressTable(false);
     }
 
     private void btnAddServer(ActionEvent actionEvent) {
@@ -1170,9 +1193,18 @@ public class HomePage {
 
     //Fill Tables functions
 
-    private void AddressTable() {
+    private void AddressTable(boolean isEditing) {
+        Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
+        if (isEditing) {
+            editableColuns.add(2);
+        }
         String[] columNames = {"ID","Actual Interface","Address","Disabled"};
-        DefaultTableModel model = new DefaultTableModel(columNames, 0);
+        DefaultTableModel model = new DefaultTableModel(columNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return editableColuns.contains(column);
+            }
+        };
 
         try {
             for (GetAddress address : apiClient.GetAddress()) {
@@ -1189,6 +1221,37 @@ public class HomePage {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        JComboBox<String> comboBox = new JComboBox<>();
+        comboBox.addItem("true");
+        comboBox.addItem("false");
+        addrTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(comboBox));
+
+        addrTable.putClientProperty("terminateEditOnFocusLost", true);
+        addrTable.getModel().addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE) {
+                int row = e.getFirstRow();
+                int col = e.getColumn();
+                if (col == TableModelEvent.ALL_COLUMNS) return;
+                if (col == 2 )  {
+                    String newAddress = addrTable.getValueAt(row,col).toString();
+                    if (!isValidNetwork(newAddress)) {
+                        JOptionPane.showMessageDialog(owner,
+                                "Invalid Address!\nMust be 10.10.10.1/24",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }else {
+                        String id = addrTable.getValueAt(row,0).toString();
+                        try {
+                            apiClient.UpdateAddress(id, newAddress);
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+
+            }
+        });
 
     }
 
@@ -1273,7 +1336,6 @@ public class HomePage {
         });
     }
 
-
     private void fillWifiSpTable(boolean isEditing) {
         Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
         if (isEditing) {
@@ -1303,6 +1365,7 @@ public class HomePage {
             throw new RuntimeException(e);
         }
     }
+
     private void fillWifiInterfacesTable(boolean isEditing) {
         Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
         if (isEditing) {
@@ -1566,10 +1629,6 @@ public class HomePage {
         });
 
     }
-
-
-
-
 
     private void fillDhcpLeaseTable(boolean isEditing) {
         Set<Integer> editableColuns = new java.util.HashSet<>(Set.of());
@@ -2041,6 +2100,13 @@ public class HomePage {
                 tableInterfacesBridge.clearSelection();
                 tablePortsBridge.clearSelection();
                 break;
+            case ROUTE:
+                tableRoute.clearSelection();
+            case WIREGUARD:
+                wirePeersTable.clearSelection();
+                wireInterfacesTable.clearSelection();
+            case ADDRESS:
+                addrTable.clearSelection();
             default:
                 break;
         }
@@ -2097,7 +2163,7 @@ public class HomePage {
         routePanel.setVisible(false);
         wireGuardPanel.setVisible(false);
         updatePanel.setVisible(false);
-        deviderCheck.setVisible(false);
+        dividerCheck.setVisible(false);
     }
 
     private void btnShowHomePanel(ActionEvent actionEvent) {
@@ -2110,7 +2176,7 @@ public class HomePage {
             addrPanel.setVisible(false);
             routePanel.setVisible(false);
             wireGuardPanel.setVisible(false);
-            deviderCheck.setVisible(false);
+            dividerCheck.setVisible(false);
             setDashboardValues();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -2127,7 +2193,7 @@ public class HomePage {
         addrPanel.setVisible(false);
         routePanel.setVisible(false);
         updatePanel.setVisible(false);
-        deviderCheck.setVisible(false);
+        dividerCheck.setVisible(false);
         wireGuardPanel.setVisible(false);
         interfaceTable();
     }
@@ -2142,7 +2208,7 @@ public class HomePage {
         routePanel.setVisible(false);
         wireGuardPanel.setVisible(false);
         updatePanel.setVisible(false);
-        deviderCheck.setVisible(false);
+        dividerCheck.setVisible(false);
 
         fillDhcpLeaseTable(false);
 
@@ -2158,7 +2224,7 @@ public class HomePage {
                 //Top barLabels
                 hostLabel,userLabel, hostIpText, usernameText,
                 //VersionPanel
-                status,statusLabel,chanel,chanelLabel,instaLabel,instaled,latestLabel,latest,
+                status,statusLabel,chanel,chanelLabel, installedLabel, installed,latestLabel,latest,
                 //StatsPanel Labels
                 frequency,freqLabel,cores,cpuLabel,cpuName,uptime,uptimeLabel,version,versionLabel,memoryLabel,loadLabel,coresLabel,hddLabel,
                 //DNS Panel
@@ -2186,8 +2252,8 @@ public class HomePage {
 
         divider.setForeground(new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(),50));
 
-        deviderCheck.setForeground(new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(),50));
-        deviderCheck.setVisible(false);
+        dividerCheck.setForeground(new Color(textColor.getRed(), textColor.getGreen(), textColor.getBlue(),50));
+        dividerCheck.setVisible(false);
 
 
         // --- Botões ---
@@ -2196,15 +2262,15 @@ public class HomePage {
                 logoutButton,homeButton, dnsButton, routeButton, addressButton,
                 dhcpButton, interfaceButton,checkUpdateButton,updateButton,wireguardButton,
                 //DNS Buttons
-                addRecordButton, deleteRecordButton,clearCacheButton,editRecordsToggleButton,
+                addRecordButton, deleteRecordButton,clearCacheButton,editRecordsToggleButton,setupDnsConfigButton,
                 //DHCP Buttons
                 deleteDhcpButton, editDhcpButton, addClientButton, addServerButton, addNetworkButton, addLeaseButton,
                 //Address Button
-                UpdateIPButton, removeIPButton, ableDisableAddrButton, addIPButton,
+                UpdateIPButton, removeIPButton, ableDisableAddrButton, addIPButton,editAddressButton,
                 //Interfaces Button
-                deleteInterfaceButton, ableDisableInterfaceButton, addInterfaceButton,editBridgeButton,
+                deleteInterfaceButton, ableDisableInterfaceButton, addInterfaceButton,editInterfacesButton,
                 //Routes
-                addStaticRouteButton,ableDisableStaticRouteButton,deleteStaticRouteButton,
+                addStaticRouteButton,ableDisableStaticRouteButton,deleteStaticRouteButton,editRouteButton,
                 //WireGuard
                 addWireguardButton,deleteWireButton,editWireGuardButton, disAbleWireguardButton,setupWireGuardButton,generateConfButton,
         };
@@ -2275,12 +2341,15 @@ public class HomePage {
         ableDisableInterfaceButton.setIcon(new ImageIcon(check));
         ableDisableAddrButton.setIcon(new ImageIcon(check));
         ableDisableStaticRouteButton.setIcon(new ImageIcon(check));
+        disAbleWireguardButton.setIcon(new ImageIcon(check));
+
 
         checkUpdateButton.setRolloverIcon(new ImageIcon(checkHover));
         UpdateIPButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableInterfaceButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableAddrButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableStaticRouteButton.setRolloverIcon(new ImageIcon(checkHover));
+        disAbleWireguardButton.setRolloverIcon(new ImageIcon(checkHover));
 
 
         Image remove = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/delete_white.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
@@ -2315,8 +2384,14 @@ public class HomePage {
         editDhcpButton.setIcon(new ImageIcon(edit));
         editDhcpButton.setRolloverIcon(new ImageIcon(editHover));
 
-        editBridgeButton.setIcon(new ImageIcon(edit));
-        editBridgeButton.setRolloverIcon(new ImageIcon(edit));
+        editInterfacesButton.setIcon(new ImageIcon(edit));
+        editInterfacesButton.setRolloverIcon(new ImageIcon(edit));
+
+        editAddressButton.setIcon(new ImageIcon(edit));
+        editAddressButton.setRolloverIcon(new ImageIcon(edit));
+
+        editRouteButton.setIcon(new ImageIcon(edit));
+        editRouteButton.setRolloverIcon(new ImageIcon(edit));
 
 
         Image add = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/add_white.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);

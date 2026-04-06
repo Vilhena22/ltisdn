@@ -134,7 +134,7 @@ public class LoginPage {
     private void login(ActionEvent actionEvent) {
         userTextField.setText("admin");
         passwordField.setText("microtik");
-        hostFormattedTextField.setText("192.168.1.72");
+        hostFormattedTextField.setText("192.168.56.105");
         String username = userTextField.getText();
         String password = passwordField.getText();
         String host = hostFormattedTextField.getText();
@@ -234,8 +234,6 @@ public class LoginPage {
             component.setFont(font);
         }
 
-
-
         // --- Botões ---
         AbstractButton[] buttons = {
                 loginButton,clearFieldsButton
@@ -253,9 +251,9 @@ public class LoginPage {
             // Aplica hover automático
             applyHoverEffect(btn, buttonColor, hoverColor);
 
-            Image logo = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/logo.png"))).getImage().getScaledInstance(173, 133, Image.SCALE_SMOOTH);
-            logoLabel.setIcon(new ImageIcon(logo));
         }
+        Image logo = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/logo.png"))).getImage().getScaledInstance(173, 133, Image.SCALE_SMOOTH);
+        logoLabel.setIcon(new ImageIcon(logo));
         TitledBorder border = (TitledBorder) Objects.requireNonNull(scrollPanel).getBorder();
         border.setTitleColor(textColor);
         border.setTitleFont(new Font("JetBrains Mono", Font.PLAIN,25));

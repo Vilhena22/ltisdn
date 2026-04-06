@@ -11,6 +11,7 @@ import Models.Dhcp.Servers.DhcpServer;
 import Models.Dns.Dns;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
+import Models.Dns.Vrf;
 import Models.Interfaces.bridge.interfaces.addNewInterfaceBridge;
 import Models.Interfaces.bridge.interfaces.getInterfaceBridge;
 import Models.Interfaces.bridge.ports.AddBridgePort;
@@ -125,35 +126,28 @@ public class ApiClient {
         );
     }
 
-    public String postDnsConfig() throws Exception {
+    public ApiResponse postDnsConfig(Dns dnsConfig) throws Exception {
 
-        //Cria o objeto para enviar
         ObjectMapper mapper = new ObjectMapper();
-        Dns dns = new Dns();
-        dns.addressListExtraTime ="0s";
-        dns.allowRemoteRequests = "true";
-        dns.cacheMaxTtl= "1w";
-        dns.cacheSize= "1024";
-        dns.verifyDohCert = "no";
-        dns.dohMaxConcurrentQueries =50;
-        dns.dohMaxServerConnections = 5;
-        dns.dohTimeout = "5s";
-        dns.maxConcurrentQueries ="100";
-        dns.maxConcurrentTcpSessions ="20";
-        dns.maxUdpPacketSize ="4096";
-        dns.queryServerTimeout = "2s";
-        dns.queryTotalTimeout = "10s";
-        dns.vrf = "main";
-
         //Converte o objeto em Json
-        String jsonString = mapper.writeValueAsString(dns);
+        String jsonString = mapper.writeValueAsString(dnsConfig);
 
-        //Realiza o post
-        String status = sendRequestPost("/ip/dns/set",  jsonString);
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dns/set", jsonString));
 
-        return status;
+        return getApiResponse(mapper, node);
 
     }
+
+    public List<Vrf> getVrfTables() throws Exception {
+        String json = sendRequestGet("/ip/vrf");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(
+                json,
+                mapper.getTypeFactory().constructCollectionType(List.class, Vrf.class)
+        );
+    }
+
 
     public List<InterfaceWG> getInterfacesWireGuard() throws Exception {
         String json = sendRequestGet("/interface/wireguard");

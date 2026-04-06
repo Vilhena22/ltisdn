@@ -21,6 +21,7 @@ public class GenerateClientConfig extends JDialog {
     public GenerateClientConfig(ClientConfig config, JFrame owner) {
         super(owner,"Client Config",true);
         setContentPane(contentPane);
+        contentPane.setLayout(new BorderLayout());
         setModal(true);
         SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
@@ -61,6 +62,7 @@ public class GenerateClientConfig extends JDialog {
     public GenerateClientConfig(String peerID, JFrame owner,ApiClient apiClient) {
         super(owner,"Client Config",true);
         setContentPane(contentPane);
+        contentPane.setLayout(new BorderLayout());
         SwingUtilities.updateComponentTreeUI(owner);
         getRootPane().setDefaultButton(buttonOK);
 
@@ -90,6 +92,8 @@ public class GenerateClientConfig extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+
         try {
             showClientConfig(apiClient.getWireguardClinentConfig(peerID).getFirst());
         } catch (Exception e) {
@@ -135,8 +139,6 @@ public class GenerateClientConfig extends JDialog {
 
         contentPane.add(topPanel, BorderLayout.CENTER);
         contentPane.add(qrLabel, BorderLayout.EAST);
-
-        contentPane.setVisible(true);
     }
 
     public BufferedImage generateQR(String text) throws Exception {
