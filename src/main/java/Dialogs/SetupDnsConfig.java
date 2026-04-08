@@ -95,7 +95,7 @@ public class SetupDnsConfig extends JDialog {
             cacheSizeFormattedTextField.setText(dns.cacheSize);
             cacheMaxTTLFormattedTextField.setText(dns.cacheMaxTtl);
             cacheUsedValue.setText(dns.cacheUsed);
-            allowRemoteRequestsCheckBox.setSelected(Boolean.parseBoolean(dns.allowRemoteRequests));
+            allowRemoteRequestsCheckBox.setSelected(Boolean.parseBoolean(String.valueOf(dns.allowRemoteRequests)));
             verifyDOHCertCheckBox.setSelected(dns.verifyDohCert);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -119,7 +119,7 @@ public class SetupDnsConfig extends JDialog {
         dns.cacheSize = cacheSizeFormattedTextField.getText();
         dns.cacheMaxTtl = cacheMaxTTLFormattedTextField.getText();
         dns.verifyDohCert = verifyDOHCertCheckBox.isSelected();
-        dns.allowRemoteRequests = String.valueOf(allowRemoteRequestsCheckBox.isSelected());
+        dns.allowRemoteRequests = Boolean.parseBoolean(String.valueOf(allowRemoteRequestsCheckBox.isSelected()));
         dns.vrf = Objects.requireNonNull(vrfComboBox.getSelectedItem()).toString();
 
         try {

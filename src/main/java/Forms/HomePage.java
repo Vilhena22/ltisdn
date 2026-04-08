@@ -2,7 +2,6 @@ package Forms;
 
 import ApiClient.ApiClient;
 import Dialogs.Add.*;
-import Dialogs.Edit.UpdateIP;
 import Dialogs.GenerateClientConfig;
 import Dialogs.SetupDnsConfig;
 import Dialogs.SetupWireguardConnection;
@@ -11,6 +10,7 @@ import Models.Dhcp.Clients.DhcpClient;
 import Models.Dhcp.Leases.DhcpLease;
 import Models.Dhcp.Networks.DhcpNetwork;
 import Models.Dhcp.Servers.DhcpServer;
+import Models.Dns.Dns;
 import Models.Dns.DnsCache;
 import Models.Dns.DnsRecord;
 import Models.Interfaces.bridge.interfaces.addNewInterfaceBridge;
@@ -159,6 +159,7 @@ public class HomePage {
     private JToggleButton editAddressButton;
     private JButton disAbleDnsButton;
     private JButton disAbleDhcpButton;
+    private JButton disAbleDnsServerButton;
     private final ApiClient apiClient;
     private final boolean isDarkMode;
 
@@ -222,6 +223,7 @@ public class HomePage {
         deleteDhcpButton.addActionListener(this::btnDeleteButton);
         setupDnsConfigButton.addActionListener(this::btnConfigDns);
         disAbleDnsButton.addActionListener(this::btnDisAbleDnsRecord);
+        disAbleDnsServerButton.addActionListener(this::btnDisAbleDnsServer);
 
         //Address Buttons Functions
         addIPButton.addActionListener(this::btnAddIP);
@@ -234,6 +236,8 @@ public class HomePage {
         ableDisableInterfaceButton.addActionListener(this::btnAbleDisableInterface);
         deleteInterfaceButton.addActionListener(this::btnDeleteInterface);
         addInterfaceButton.addActionListener(this::btnAddInterface);
+        editInterfacesButton.addActionListener(this::btnEditInterfacesButton);
+
 
         //DHCP Buttons Functions
         editDhcpButton.addActionListener(this::btnEditDhcpButton);
@@ -248,7 +252,6 @@ public class HomePage {
         deleteStaticRouteButton.addActionListener(this::btnRouteDelete);
         addStaticRouteButton.addActionListener(this::btnRouteAdd);
         ableDisableStaticRouteButton.addActionListener(this::btnRouteAbleDisabled);
-        editInterfacesButton.addActionListener(this::btnEditInterfacesButton);
         editRouteButton.addActionListener(this::btnEditRouteButton);
 
         wireguardTabbedPane.addMouseListener(new MouseAdapter() {
@@ -615,6 +618,21 @@ public class HomePage {
                 }
             }
         });
+    }
+
+    private void btnDisAbleDnsServer(ActionEvent actionEvent) {
+        try {
+            Dns dnsconf =  apiClient.getDnsConfig();
+            if(dnsconf.allowRemoteRequests){
+                disAbleDnsServerButton.setText("Disable DNS Server");
+                System.out.println(apiClient.dis_ableDns(false));
+            }else{
+                disAbleDnsServerButton.setText("Enable DNS Server");
+                System.out.println(apiClient.dis_ableDns(true));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void btnConfigDns(ActionEvent actionEvent) {
@@ -1087,15 +1105,18 @@ public class HomePage {
         }else {
             editInterfacesButton.setText("Enable Edit");
         }
-        if (tabbedPaneBridge.getTitleAt(tabbedPaneBridge.getSelectedIndex()).compareTo("Interfaces") == 0){
-            fillBridgeInterfacesTable(isEdited);
-        }else {
-            fillBridgePortsTable(isEdited);
-        }
-        if (tabbedPaneWiFi.getTitleAt(tabbedPaneWiFi.getSelectedIndex()).compareTo("Interfaces") == 0){
-            fillWifiInterfacesTable(isEdited);
-        }else {
-            fillWifiSpTable(isEdited);
+        if (comboBoxInterfaces.getSelectedIndex() == 2) {
+            if (tabbedPaneBridge.getSelectedIndex() == 0){
+                fillBridgeInterfacesTable(isEdited);
+            }else {
+                fillBridgePortsTable(isEdited);
+            }
+        }else if (comboBoxInterfaces.getSelectedIndex() == 1) {
+            if (tabbedPaneWiFi.getSelectedIndex() == 0){
+                fillWifiInterfacesTable(isEdited);
+            }else {
+                fillWifiSpTable(isEdited);
+            }
         }
         clearTableSelection(TablesTypes.BRIDGE);
         clearTableSelection(TablesTypes.WIFI);
@@ -1182,7 +1203,7 @@ public class HomePage {
             case "leases":
                 for (int row : dhcpLeasesTable.getSelectedRows()) {
                     try {
-                        apiClient.dis_ableDhcpLease(dhcpLeasesTable.getValueAt(row, 0).toString(), Boolean.parseBoolean(dhcpLeasesTable.getValueAt(row, 4).toString()));
+                        System.out.println(apiClient.dis_ableDhcpLease(dhcpLeasesTable.getValueAt(row, 0).toString(), Boolean.parseBoolean(dhcpLeasesTable.getValueAt(row, 4).toString())));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -1776,7 +1797,7 @@ public class HomePage {
         JComboBox<String> comboBox2 = new JComboBox<>();
         comboBox2.addItem("true");
         comboBox2.addItem("false");
-        wirePeersTable.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(comboBox2));
+        wirePeersTable.getColumnModel().getColumn(6).setCellEditor(new DefaultCellEditor(comboBox2));
         wirePeersTable.putClientProperty("terminateEditOnFocusLost", true);
         wirePeersTable.getModel().addTableModelListener(e -> {
             if (e.getType() == TableModelEvent.UPDATE) {
@@ -2068,7 +2089,7 @@ public class HomePage {
 
         }
 
-        String[] columNames = {"ID","Network","Dns-Server", "Gateway","Dynamic","Dhcp-Option","Ntp-Server","Wins-Server" };
+        String[] columNames = {"ID","Network","Dns-Server", "Gateway","Dynamic"};
         DefaultTableModel model = new DefaultTableModel(columNames, 0){
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -2083,10 +2104,7 @@ public class HomePage {
                         dhcpNetwork.address,
                         dhcpNetwork.dnsServer,
                         dhcpNetwork.gateway,
-                        dhcpNetwork.dynamic,
-                        dhcpNetwork.dhcpOption,
-                        dhcpNetwork.ntpServer,
-                        dhcpNetwork.winsServer,
+                        dhcpNetwork.dynamic
                 };
                 model.addRow(row);
             }
@@ -2168,7 +2186,7 @@ public class HomePage {
                 };
                 model.addRow(row);
             }
-            formatTable(dhcpNetworkTable, model);
+            formatTable(cacheTable, model);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -2427,9 +2445,9 @@ public class HomePage {
                 //StatsPanel Labels
                 frequency,freqLabel,cores,cpuLabel,cpuName,uptime,uptimeLabel,version,versionLabel,memoryLabel,loadLabel,coresLabel,hddLabel,
                 //DNS Panel
-                dnsTabbed,cacheTable,recordsTable,
+                dnsTabbed,cacheTable,recordsTable,disAbleDnsServerButton,
                 //InterfacesPanel
-                interfaceTable,comboBoxInterfaces,interfacesAllPanel,tabbedPaneBridge,tabbedPaneWiFi,tableInterfacesWiFi,tabbedPaneBridge,
+                interfaceTable,comboBoxInterfaces,interfacesAllPanel,tabbedPaneBridge,tabbedPaneWiFi,tableInterfacesWiFi,tabbedPaneBridge,tableInterfacesBridge,
                 tableSP,tablePortsBridge,
                 //Dhcp Panel
                 tabbedDhcp,dhcpServerTable,dhcpNetworkTable,dhcpClientsTable,dhcpLeasesTable,disAbleDhcpButton,
@@ -2461,7 +2479,7 @@ public class HomePage {
                 logoutButton,homeButton, dnsButton, routeButton, addressButton,
                 dhcpButton, interfaceButton,checkUpdateButton,updateButton,wireguardButton,
                 //DNS Buttons
-                addRecordButton, deleteRecordButton,clearCacheButton,editRecordsToggleButton,setupDnsConfigButton,disAbleDnsButton,
+                addRecordButton, deleteRecordButton,clearCacheButton,editRecordsToggleButton,setupDnsConfigButton,disAbleDnsButton,disAbleDnsServerButton,
                 //DHCP Buttons
                 deleteDhcpButton, editDhcpButton, addClientButton, addServerButton, addNetworkButton, addLeaseButton,disAbleDhcpButton,
                 //Address Button
@@ -2538,6 +2556,7 @@ public class HomePage {
         disAbleWireguardButton.setIcon(new ImageIcon(check));
         disAbleDnsButton.setIcon(new ImageIcon(check));
         disAbleDhcpButton.setIcon(new ImageIcon(check));
+        disAbleDnsServerButton.setIcon(new ImageIcon(check));
 
 
         checkUpdateButton.setRolloverIcon(new ImageIcon(checkHover));
@@ -2547,6 +2566,7 @@ public class HomePage {
         disAbleWireguardButton.setRolloverIcon(new ImageIcon(checkHover));
         disAbleDnsButton.setRolloverIcon(new ImageIcon(checkHover));
         disAbleDhcpButton.setRolloverIcon(new ImageIcon(checkHover));
+        disAbleDnsServerButton.setRolloverIcon(new ImageIcon(checkHover));
 
         Image remove = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/delete_white.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
         Image removeHover = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/delete_black.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);

@@ -13,7 +13,7 @@ public class Dns {
     @JsonIgnore
     public String addressListExtraTime;
     @JsonProperty("allow-remote-requests")
-    public String allowRemoteRequests;
+    public boolean allowRemoteRequests;
     @JsonProperty("cache-max-ttl")
     public String cacheMaxTtl;
     @JsonProperty("cache-size")

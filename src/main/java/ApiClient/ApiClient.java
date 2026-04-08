@@ -154,6 +154,19 @@ public class ApiClient {
 
     }
 
+    public ApiResponse dis_ableDns(boolean state) throws Exception {
+        Dns dns = new Dns();
+        dns.allowRemoteRequests = state;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dns);
+        System.out.println(jsonString);
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dns/set", jsonString));
+
+        return getApiResponse(mapper, node);
+    }
+
     public List<Vrf> getVrfTables() throws Exception {
         String json = sendRequestGet("/ip/vrf");
         ObjectMapper mapper = new ObjectMapper();
