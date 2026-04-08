@@ -9,8 +9,8 @@ public class addInterfaceBridge extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox comboBoxDisabled;
     private JTextField name;
+    private JCheckBox disabledCheckBox;
     private final JFrame owner;
     private final ApiClient apiClient;
 
@@ -52,7 +52,7 @@ public class addInterfaceBridge extends JDialog {
 
     private void onOK() {
         try {
-            apiClient.addInterfaceBridge(name.getText(), Boolean.parseBoolean(comboBoxDisabled.getSelectedItem().toString()));
+            apiClient.addInterfaceBridge(name.getText(), disabledCheckBox.isSelected());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

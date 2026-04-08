@@ -158,6 +158,8 @@ public class HomePage {
     private JToggleButton editRouteButton;
     private JButton setupDnsConfigButton;
     private JToggleButton editAddressButton;
+    private JButton disAbleDnsButton;
+    private JButton disAbleDhcpButton;
     private final ApiClient apiClient;
     private final boolean isDarkMode;
 
@@ -220,6 +222,7 @@ public class HomePage {
         deleteRecordButton.addActionListener(this::btnDeleteRecord);
         deleteDhcpButton.addActionListener(this::btnDeleteButton);
         setupDnsConfigButton.addActionListener(this::btnConfigDns);
+        disAbleDnsButton.addActionListener(this::btnDisAbleDnsRecord);
 
         //Address Buttons Functions
         addIPButton.addActionListener(this::btnAddIP);
@@ -240,6 +243,7 @@ public class HomePage {
         addLeaseButton.addActionListener(this::btnAddLease);
         addClientButton.addActionListener(this::btnAddClient);
         addServerButton.addActionListener(this::btnAddServer);
+        disAbleDhcpButton.addActionListener(this::btnDisAbleDhcp);
 
         //Route Buttons Functions
 
@@ -301,6 +305,7 @@ public class HomePage {
                     deleteRecordButton.setVisible(false);
                     clearCacheButton.setVisible(true);
                     editRecordsToggleButton.setVisible(false);
+                    disAbleDnsButton.setVisible(false);
                     break;
                 case 1:
                     editRecordsToggleButton.setSelected(false);
@@ -310,6 +315,7 @@ public class HomePage {
                     deleteRecordButton.setVisible(true);
                     editRecordsToggleButton.setVisible(true);
                     clearCacheButton.setVisible(false);
+                    disAbleDnsButton.setVisible(true);
                     break;
             }
 
@@ -328,6 +334,7 @@ public class HomePage {
                     addLeaseButton.setVisible(true);
                     addClientButton.setVisible(false);
                     addServerButton.setVisible(false);
+                    disAbleDhcpButton.setVisible(true);
                     break;
                 case 1:
                     fillDhcpServerTable(false);
@@ -335,6 +342,7 @@ public class HomePage {
                     addLeaseButton.setVisible(false);
                     addClientButton.setVisible(false);
                     addServerButton.setVisible(true);
+                    disAbleDhcpButton.setVisible(true);
                     break;
                 case 2:
                     fillDhcpClientTable(false);
@@ -342,6 +350,7 @@ public class HomePage {
                     addLeaseButton.setVisible(false);
                     addClientButton.setVisible(true);
                     addServerButton.setVisible(false);
+                    disAbleDhcpButton.setVisible(true);
                     break;
                 case 3:
                     fillDhcpNetworkTable(false);
@@ -349,6 +358,7 @@ public class HomePage {
                     addLeaseButton.setVisible(false);
                     addClientButton.setVisible(false);
                     addServerButton.setVisible(false);
+                    disAbleDhcpButton.setVisible(false);
                     break;
             }
         }
@@ -424,42 +434,82 @@ public class HomePage {
         });
 
         recordsTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = recordsTable.getSelectedRow() != -1;
-                deleteRecordButton.setEnabled(isSelected);
+            if (e.getValueIsAdjusting()) return;
+
+            int row = recordsTable.getSelectedRow();
+            if (row == -1) return;
+
+            boolean isSelected = recordsTable.getSelectedRow() != -1;
+            Boolean disabled = (Boolean) recordsTable.getValueAt(row, 3);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                disAbleDnsButton.setText("Disable Record");
+            } else {
+                disAbleDnsButton.setText("Enable Record");
             }
+            deleteRecordButton.setEnabled(isSelected);
+            disAbleDnsButton.setEnabled(isSelected);
         });
 
         dhcpNetworkTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
-                deleteDhcpButton.setEnabled(isSelected);
-                editDhcpButton.setEnabled(isSelected);
-            }
+            if (e.getValueIsAdjusting()) return;
+            int row = dhcpNetworkTable.getSelectedRow();
+            if (row == -1) return;
+            boolean isSelected = dhcpNetworkTable.getSelectedRow() != -1;
+            deleteDhcpButton.setEnabled(isSelected);
+            editDhcpButton.setEnabled(isSelected);
         });
 
         dhcpLeasesTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpLeasesTable.getSelectedRow() != -1;
-                deleteDhcpButton.setEnabled(isSelected);
-                editDhcpButton.setEnabled(isSelected);
+            if (e.getValueIsAdjusting()) return;
+            int row = dhcpLeasesTable.getSelectedRow();
+            if (row == -1) return;
+            boolean isSelected = dhcpLeasesTable.getSelectedRow() != -1;
+            Boolean disabled = (Boolean) dhcpLeasesTable.getValueAt(row, 4);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                disAbleDhcpButton.setText("Disable Lease");
+            } else {
+                disAbleDhcpButton.setText("Enable Lease");
             }
+            deleteDhcpButton.setEnabled(isSelected);
+            editDhcpButton.setEnabled(isSelected);
+            disAbleDhcpButton.setEnabled(isSelected);
         });
 
         dhcpClientsTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpClientsTable.getSelectedRow() != -1;
-                deleteDhcpButton.setEnabled(isSelected);
-                editDhcpButton.setEnabled(isSelected);
+            if (e.getValueIsAdjusting()) return;
+            int row = dhcpClientsTable.getSelectedRow();
+            if (row == -1) return;
+            boolean isSelected = dhcpClientsTable.getSelectedRow() != -1;
+            Boolean disabled = (Boolean) dhcpClientsTable.getValueAt(row, 5);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                disAbleDhcpButton.setText("Disable Client");
+            } else {
+                disAbleDhcpButton.setText("Enable Client");
             }
+            deleteDhcpButton.setEnabled(isSelected);
+            editDhcpButton.setEnabled(isSelected);
+            disAbleDhcpButton.setEnabled(isSelected);
+
         });
 
         dhcpServerTable.getSelectionModel().addListSelectionListener(e -> {
-            if (e.getValueIsAdjusting()) {
-                boolean isSelected = dhcpServerTable.getSelectedRow() != -1;
-                editDhcpButton.setEnabled(isSelected);
-                deleteDhcpButton.setEnabled(isSelected);
+            if (e.getValueIsAdjusting()) return;
+            int row = dhcpServerTable.getSelectedRow();
+            if (row == -1) return;
+            boolean isSelected = dhcpServerTable.getSelectedRow() != -1;
+            Boolean disabled = (Boolean) dhcpServerTable.getValueAt(row, 4);
+
+            if (Boolean.FALSE.equals(disabled)) {
+                disAbleDhcpButton.setText("Disable Server");
+            } else {
+                disAbleDhcpButton.setText("Enable Server");
             }
+            deleteDhcpButton.setEnabled(isSelected);
+            editDhcpButton.setEnabled(isSelected);
+            disAbleDhcpButton.setEnabled(isSelected);
         });
 
         wirePeersTable.addMouseListener(new MouseAdapter() {
@@ -474,10 +524,10 @@ public class HomePage {
                     }else{
                         disAbleWireguardButton.setText("Enable Peer");
                     }
-                    disAbleWireguardButton.setEnabled(isSelected);
-                    deleteWireButton.setEnabled(isSelected);
-                    generateConfButton.setEnabled(isSelected);
                 }
+                disAbleWireguardButton.setEnabled(isSelected);
+                deleteWireButton.setEnabled(isSelected);
+                generateConfButton.setEnabled(isSelected);
             }
         });
 
@@ -580,9 +630,7 @@ public class HomePage {
     private void btnEditRouteButton(ActionEvent actionEvent) {
         clearTableSelection(TablesTypes.ROUTE);
         boolean isEdited = editRouteButton.isSelected();
-
-        //System.out.println(isEdited);
-        if (isEdited) {
+        if (!isEdited) {
             editRouteButton.setText("Disable Edit");
         }else {
             editRouteButton.setText("Enable Edit");
@@ -682,8 +730,7 @@ public class HomePage {
 
     private void btnEditWireguard(ActionEvent actionEvent) {
         boolean isEdited = editWireGuardButton.isSelected();
-        System.out.println(isEdited);
-        if (isEdited) {
+        if (!isEdited) {
             editWireGuardButton.setText("Disable Edit");
         }else {
             editWireGuardButton.setText("Enable Edit");
@@ -763,6 +810,7 @@ public class HomePage {
     }
 
     private void btnShowRoutePanel(ActionEvent actionEvent) {
+        routePanel.setVisible(true);
         routePanel.setVisible(true);
         cpuPanel.setVisible(false);
         addrPanel.setVisible(false);
@@ -1033,9 +1081,7 @@ public class HomePage {
         clearTableSelection(TablesTypes.BRIDGE);
         clearTableSelection(TablesTypes.WIFI);
         boolean isEdited = editInterfacesButton.isSelected();
-
-        //System.out.println(isEdited);
-        if (isEdited) {
+        if (!isEdited) {
             editInterfacesButton.setText("Disable Edit");
         }else {
             editInterfacesButton.setText("Enable Edit");
@@ -1068,7 +1114,7 @@ public class HomePage {
     private void btnEditAddress(ActionEvent actionEvent) {
         clearTableSelection(TablesTypes.ADDRESS);
         boolean isEdited = editAddressButton.isSelected();
-        if (isEdited) {
+        if (!isEdited) {
             editAddressButton.setText("Disable Edit");
         }else {
             editAddressButton.setText("Enable Edit");
@@ -1131,10 +1177,47 @@ public class HomePage {
         fillDhcpServerTable(false);
     }
 
+    private void btnDisAbleDhcp(ActionEvent actionEvent) {
+        switch (tabbedDhcp.getTitleAt(tabbedDhcp.getSelectedIndex()).toLowerCase()) {
+            case "leases":
+                for (int row : dhcpLeasesTable.getSelectedRows()) {
+                    try {
+                        apiClient.dis_ableDhcpLease(dhcpLeasesTable.getValueAt(row, 0).toString(), Boolean.parseBoolean(dhcpLeasesTable.getValueAt(row, 4).toString()));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                fillDhcpLeaseTable(false);
+                break;
+            case "clients":
+                for (int row : dhcpClientsTable.getSelectedRows()) {
+                    try {
+                        apiClient.dis_ableDhcpClient(dhcpClientsTable.getValueAt(row, 0).toString(), Boolean.parseBoolean(dhcpClientsTable.getValueAt(row, 5).toString()));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                fillDhcpClientTable(false);
+                break;
+            case "server":
+                for (int row : dhcpServerTable.getSelectedRows()) {
+                    try {
+                        apiClient.dis_ableDhcpServer(dhcpServerTable.getValueAt(row, 0).toString(), Boolean.parseBoolean(dhcpServerTable.getValueAt(row, 4).toString()));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                fillDhcpServerTable(false);
+                break;
+        }
+        clearTableSelection(TablesTypes.DHCP);
+
+    }
+
     private void btnEditDhcpButton(ActionEvent actionEvent) {
         clearTableSelection(TablesTypes.DHCP);
         boolean isEdited = editDhcpButton.isSelected();
-        if (isEdited) {
+        if (!isEdited) {
             editDhcpButton.setText("Disable Edit");
         }else {
             editDhcpButton.setText("Enable Edit");
@@ -1916,7 +1999,6 @@ public class HomePage {
                         dhcpClient.usePeerDns,
                         dhcpClient.usePeerNtp,
                         dhcpClient.disabled,
-                        dhcpClient.dhcpOption
 
                 };
                 model.addRow(row);
@@ -2217,6 +2299,18 @@ public class HomePage {
         }
     }
 
+    private void btnDisAbleDnsRecord(ActionEvent actionEvent) {
+        for (int row : recordsTable.getSelectedRows()) {
+            try {
+               apiClient.dis_ableDnsRecord(recordsTable.getValueAt(row, 0).toString(), Boolean.parseBoolean(recordsTable.getValueAt(row, 3).toString()));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            clearTableSelection(TablesTypes.DNS);
+        }
+        fillDnsRecordsTable(false);
+    }
+
     private void btnDeleteRecord(ActionEvent actionEvent) {
         for (int row : recordsTable.getSelectedRows()) {
             try {
@@ -2241,7 +2335,7 @@ public class HomePage {
         clearTableSelection(TablesTypes.DNS);
         boolean isEdited = editRecordsToggleButton.isSelected();
         System.out.println(isEdited);
-        if (isEdited) {
+        if (!isEdited) {
             editRecordsToggleButton.setText("Disable Edit");
         }else {
             editRecordsToggleButton.setText("Enable Edit");
@@ -2338,7 +2432,7 @@ public class HomePage {
                 interfaceTable,comboBoxInterfaces,interfacesAllPanel,tabbedPaneBridge,tabbedPaneWiFi,tableInterfacesWiFi,tabbedPaneBridge,
                 tableSP,tablePortsBridge,
                 //Dhcp Panel
-                tabbedDhcp,dhcpServerTable,dhcpNetworkTable,dhcpClientsTable,dhcpLeasesTable,
+                tabbedDhcp,dhcpServerTable,dhcpNetworkTable,dhcpClientsTable,dhcpLeasesTable,disAbleDhcpButton,
                 //Address Panel
                 addrTable,
                 //Route Panel
@@ -2367,9 +2461,9 @@ public class HomePage {
                 logoutButton,homeButton, dnsButton, routeButton, addressButton,
                 dhcpButton, interfaceButton,checkUpdateButton,updateButton,wireguardButton,
                 //DNS Buttons
-                addRecordButton, deleteRecordButton,clearCacheButton,editRecordsToggleButton,setupDnsConfigButton,
+                addRecordButton, deleteRecordButton,clearCacheButton,editRecordsToggleButton,setupDnsConfigButton,disAbleDnsButton,
                 //DHCP Buttons
-                deleteDhcpButton, editDhcpButton, addClientButton, addServerButton, addNetworkButton, addLeaseButton,
+                deleteDhcpButton, editDhcpButton, addClientButton, addServerButton, addNetworkButton, addLeaseButton,disAbleDhcpButton,
                 //Address Button
                 UpdateIPButton, removeIPButton, ableDisableAddrButton, addIPButton,editAddressButton,
                 //Interfaces Button
@@ -2382,7 +2476,6 @@ public class HomePage {
 
         Color buttonColor = new Color(16, 83, 138);
         Color hoverColor = new Color(102, 210, 170);
-        Color borderColor = new Color(10, 52, 86,60);
 
         for (AbstractButton btn : buttons) {
             btn.setBackground(buttonColor);
@@ -2397,10 +2490,6 @@ public class HomePage {
             applyHoverEffect(btn, buttonColor, hoverColor);
         }
 
-        String iconColor = "white";
-        if (textColor.getBlue() ==255 && textColor.getRed() ==255 && textColor.getGreen() ==255) {
-                iconColor = "white";
-        }
         Image home = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/home_white.png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
         Image homeHover = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/home_black.png"))).getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH);
 
@@ -2448,6 +2537,8 @@ public class HomePage {
         ableDisableAddrButton.setIcon(new ImageIcon(check));
         ableDisableStaticRouteButton.setIcon(new ImageIcon(check));
         disAbleWireguardButton.setIcon(new ImageIcon(check));
+        disAbleDnsButton.setIcon(new ImageIcon(check));
+        disAbleDhcpButton.setIcon(new ImageIcon(check));
 
 
         checkUpdateButton.setRolloverIcon(new ImageIcon(checkHover));
@@ -2456,7 +2547,8 @@ public class HomePage {
         ableDisableAddrButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableStaticRouteButton.setRolloverIcon(new ImageIcon(checkHover));
         disAbleWireguardButton.setRolloverIcon(new ImageIcon(checkHover));
-
+        disAbleDnsButton.setRolloverIcon(new ImageIcon(checkHover));
+        disAbleDhcpButton.setRolloverIcon(new ImageIcon(checkHover));
 
         Image remove = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/delete_white.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
         Image removeHover = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/delete_black.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
@@ -2585,6 +2677,11 @@ public class HomePage {
 
         generateConfButton.setEnabled(false);
         generateConfButton.setVisible(false);
+
+        disAbleDnsButton.setEnabled(false);
+        disAbleDnsButton.setVisible(false);
+
+        disAbleDhcpButton.setEnabled(false);
 
     }
 

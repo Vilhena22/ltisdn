@@ -112,6 +112,21 @@ public class ApiClient {
 
     }
 
+    public ApiResponse dis_ableDnsRecord(String id, boolean state) throws Exception {
+        boolean newState = !state;
+        DnsRecord dnsRecord = new DnsRecord();
+        dnsRecord.id = id;
+        dnsRecord.disabled = newState;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dnsRecord);
+
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dns/static/set", jsonString));
+
+        return getApiResponse(mapper, node);
+    }
+
     public Integer deleteDnsRecord(String id) throws Exception {
         return sendRequestDelete("/ip/dns/static/"+id);
     }
@@ -363,6 +378,23 @@ public class ApiClient {
 
     }
 
+    public ApiResponse dis_ableDhcpLease(String id, boolean disabled) throws Exception {
+
+        boolean newState = !disabled;
+        DhcpLease dhcpLease = new DhcpLease();
+        dhcpLease.id = id;
+        dhcpLease.disabled = newState;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonString = mapper.writeValueAsString(dhcpLease);
+
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-server/lease/set",jsonString));
+
+        return getApiResponse(mapper, node);
+
+    }
+
 
     //clients
     public List<DhcpClient> getDhcpClients() throws Exception {
@@ -394,16 +426,22 @@ public class ApiClient {
     }
 
 
-    public String postDesActivateClient(String id, Boolean state) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+    public ApiResponse dis_ableDhcpClient(String id, boolean disabled) throws Exception {
+
+        boolean newState = !disabled;
         DhcpClient dhcpClient = new DhcpClient();
-        dhcpClient.id = "*"+id;
-        dhcpClient.disabled = Boolean.parseBoolean(state.toString());
+        dhcpClient.id = id;
+        dhcpClient.disabled = newState;
+        ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpClient);
-        return sendRequestPost("/ip/dhcp-client/set",jsonString);
-    }
 
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-client/set",jsonString));
+
+        return getApiResponse(mapper, node);
+
+    }
 
     //Server
     public List<DhcpServer> getDhcpServer() throws Exception {
@@ -436,14 +474,21 @@ public class ApiClient {
     }
 
 
-    public String postDesActivateServer(String id, Boolean state) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
+    public ApiResponse dis_ableDhcpServer(String id, boolean disabled) throws Exception {
+
+        boolean newState = !disabled;
         DhcpServer dhcpServer = new DhcpServer();
-        dhcpServer.id = "*"+id;
-        dhcpServer.disabled = Boolean.parseBoolean(state.toString());
+        dhcpServer.id = id;
+        dhcpServer.disabled = newState;
+        ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String jsonString = mapper.writeValueAsString(dhcpServer);
-        return sendRequestPost("/ip/dhcp-server/set",jsonString);
+
+        //envia o post com os novos dados
+        JsonNode node = mapper.readTree(sendRequestPost("/ip/dhcp-server/set",jsonString));
+
+        return getApiResponse(mapper, node);
+
     }
 
 
@@ -884,4 +929,6 @@ public class ApiClient {
 
         return sendRequestPost("/ip/route/set", payload);
     }
+
+
 }

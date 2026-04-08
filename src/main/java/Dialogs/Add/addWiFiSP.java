@@ -10,10 +10,10 @@ public class addWiFiSP extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
-    private JComboBox comboBoxDisabled;
     private final JFrame owner;
     private final ApiClient apiClient;
     private JTextField profileName;
+    private JCheckBox disabledCheckBox;
 
     public addWiFiSP(JFrame owner, ApiClient apiClient) {
         super(owner,"Add Interface WiFi",true);
@@ -54,7 +54,7 @@ public class addWiFiSP extends JDialog {
     private void onOK() {
 
         try {
-            apiClient.AddProfile(profileName.getText(), Boolean.parseBoolean(Objects.requireNonNull(comboBoxDisabled.getSelectedItem()).toString()));
+            apiClient.AddProfile(profileName.getText(), disabledCheckBox.isSelected());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

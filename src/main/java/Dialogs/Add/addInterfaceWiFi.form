@@ -69,7 +69,7 @@
               <font name="JetBrains Mono" size="14"/>
             </properties>
           </component>
-          <component id="54193" class="javax.swing.JTextField" binding="channel_width">
+          <component id="54193" class="javax.swing.JComboBox" binding="channel_width">
             <constraints>
               <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -77,10 +77,9 @@
             </constraints>
             <properties>
               <font name="JetBrains Mono" size="14"/>
-              <text value=""/>
             </properties>
           </component>
-          <component id="6b39d" class="javax.swing.JTextField" binding="master_Interface">
+          <component id="6b39d" class="javax.swing.JComboBox" binding="master_Interface">
             <constraints>
               <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -90,7 +89,7 @@
               <font name="JetBrains Mono" size="14"/>
             </properties>
           </component>
-          <component id="f9b96" class="javax.swing.JTextField" binding="mode">
+          <component id="f9b96" class="javax.swing.JComboBox" binding="mode">
             <constraints>
               <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -110,7 +109,7 @@
               <font name="JetBrains Mono" size="14"/>
             </properties>
           </component>
-          <component id="6e8aa" class="javax.swing.JTextField" binding="band">
+          <component id="6e8aa" class="javax.swing.JComboBox" binding="band">
             <constraints>
               <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -174,25 +173,13 @@
               <text value="Channel-width"/>
             </properties>
           </component>
-          <component id="6c1ae" class="javax.swing.JLabel">
+          <component id="ca60" class="javax.swing.JCheckBox" binding="disabledCheckBox" default-binding="true">
             <constraints>
-              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <font name="JetBrains Mono" size="14"/>
               <text value="Disabled"/>
-            </properties>
-          </component>
-          <component id="d5d00" class="javax.swing.JComboBox" binding="comboBoxDisabled">
-            <constraints>
-              <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font name="JetBrains Mono" size="14"/>
-              <model>
-                <item value="False"/>
-                <item value="True"/>
-              </model>
             </properties>
           </component>
         </children>

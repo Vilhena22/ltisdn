@@ -73,27 +73,6 @@
               <text value="Name"/>
             </properties>
           </component>
-          <component id="9fccb" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font name="JetBrains Mono" size="14"/>
-              <text value="Disabled"/>
-            </properties>
-          </component>
-          <component id="ebcfa" class="javax.swing.JComboBox" binding="comboBoxDisabled">
-            <constraints>
-              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font name="JetBrains Mono" size="14"/>
-              <model>
-                <item value="False"/>
-                <item value="True"/>
-              </model>
-            </properties>
-          </component>
           <component id="6159b" class="javax.swing.JTextField" binding="name">
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
@@ -102,6 +81,15 @@
             </constraints>
             <properties>
               <font name="JetBrains Mono" size="14"/>
+            </properties>
+          </component>
+          <component id="eb166" class="javax.swing.JCheckBox" binding="disabledCheckBox" default-binding="true">
+            <constraints>
+              <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <font name="JetBrains Mono" size="14"/>
+              <text value="Disabled"/>
             </properties>
           </component>
         </children>
