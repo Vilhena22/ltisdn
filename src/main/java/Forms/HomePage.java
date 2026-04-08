@@ -103,7 +103,6 @@ public class HomePage {
     private JButton addNetworkButton;
     private JPanel addrPanel;
     private JTable addrTable;
-    private JButton UpdateIPButton;
     private JButton removeIPButton;
     private JButton ableDisableAddrButton;
     private JButton addIPButton;
@@ -228,7 +227,6 @@ public class HomePage {
         addIPButton.addActionListener(this::btnAddIP);
         ableDisableAddrButton.addActionListener(this::btnAbleDisableAddr);
         removeIPButton.addActionListener(this::btnRemoveIP);
-        UpdateIPButton.addActionListener(this::btnUpdateIP);
         editAddressButton.addActionListener(this::btnEditAddress);
 
         //Interface Buttons Functions
@@ -599,7 +597,6 @@ public class HomePage {
                     }else{
                         ableDisableAddrButton.setText("Enable Address");
                     }
-                    UpdateIPButton.setEnabled(isSelected);
                     ableDisableAddrButton.setEnabled(isSelected);
                     ableDisableAddrButton.setEnabled(isSelected);
                 }
@@ -829,13 +826,17 @@ public class HomePage {
         Set<Integer> editableColuns = new HashSet<>(Set.of());
         if (isEditing) {
             editableColuns.add(1);
-            editableColuns.add(2);
+            editableColuns.add(5);
             editableColuns.add(3);
         }
 
         String[] columNames = {"ID", "Gateway", "Static", "Destination Address", "Routing table","Disabled"};
-        DefaultTableModel model = new DefaultTableModel(columNames, 0);
-
+        DefaultTableModel model = new DefaultTableModel(columNames, 0){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return editableColuns.contains(column);
+            }
+        };
         try {
             for (Routes route : apiClient.getStaticRoute()) {
                 Object[] row = {
@@ -1100,16 +1101,16 @@ public class HomePage {
         clearTableSelection(TablesTypes.WIFI);
     }
 
-    private void btnUpdateIP(ActionEvent actionEvent) {
-        if (addrTable.getSelectedRow() > 0) {
-            int selectedRow = addrTable.getSelectedRow();
-            UpdateIP update = new UpdateIP(addrTable.getValueAt(selectedRow, 0).toString(), (String) addrTable.getValueAt(selectedRow, 1),owner,apiClient);
-            update.pack();
-            update.setLocationRelativeTo(owner);
-            update.setVisible(true);
-            AddressTable(false);
-        }
-    }
+//    private void btnUpdateIP(ActionEvent actionEvent) {
+//        if (addrTable.getSelectedRow() > 0) {
+//            int selectedRow = addrTable.getSelectedRow();
+//            UpdateIP update = new UpdateIP(addrTable.getValueAt(selectedRow, 0).toString(), (String) addrTable.getValueAt(selectedRow, 1),owner,apiClient);
+//            update.pack();
+//            update.setLocationRelativeTo(owner);
+//            update.setVisible(true);
+//            AddressTable(false);
+//        }
+//    }
 
     private void btnEditAddress(ActionEvent actionEvent) {
         clearTableSelection(TablesTypes.ADDRESS);
@@ -1162,7 +1163,6 @@ public class HomePage {
         interfacePanel.setVisible(false);
         dhcpPanel.setVisible(false);
         ableDisableAddrButton.setEnabled(false);
-        UpdateIPButton.setEnabled(false);
         updatePanel.setVisible(false);
         wireGuardPanel.setVisible(false);
         dividerCheck.setVisible(false);
@@ -2465,7 +2465,7 @@ public class HomePage {
                 //DHCP Buttons
                 deleteDhcpButton, editDhcpButton, addClientButton, addServerButton, addNetworkButton, addLeaseButton,disAbleDhcpButton,
                 //Address Button
-                UpdateIPButton, removeIPButton, ableDisableAddrButton, addIPButton,editAddressButton,
+                removeIPButton, ableDisableAddrButton, addIPButton,editAddressButton,
                 //Interfaces Button
                 deleteInterfaceButton, ableDisableInterfaceButton, addInterfaceButton,editInterfacesButton,
                 //Routes
@@ -2532,7 +2532,6 @@ public class HomePage {
         Image checkHover = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("./icons/refresh_black.png"))).getImage().getScaledInstance(15, 15, Image.SCALE_SMOOTH);
 
         checkUpdateButton.setIcon(new ImageIcon(check));
-        UpdateIPButton.setIcon(new ImageIcon(check));
         ableDisableInterfaceButton.setIcon(new ImageIcon(check));
         ableDisableAddrButton.setIcon(new ImageIcon(check));
         ableDisableStaticRouteButton.setIcon(new ImageIcon(check));
@@ -2542,7 +2541,6 @@ public class HomePage {
 
 
         checkUpdateButton.setRolloverIcon(new ImageIcon(checkHover));
-        UpdateIPButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableInterfaceButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableAddrButton.setRolloverIcon(new ImageIcon(checkHover));
         ableDisableStaticRouteButton.setRolloverIcon(new ImageIcon(checkHover));
