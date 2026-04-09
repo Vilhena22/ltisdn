@@ -3,6 +3,7 @@ package Models.Wireguard;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.errorprone.annotations.CompatibleWith;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 
@@ -32,6 +33,10 @@ public class Peer {
     @JsonProperty(value = "interface")
     public String inter;
     public String name;
+    @JsonProperty(value = "client-dns")
+    public String clientDns;
+    @JsonProperty(value = "client-address")
+    public String clientAddress;
     @JsonIgnore
     public int rx;
     @JsonIgnore

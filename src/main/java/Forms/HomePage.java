@@ -160,6 +160,8 @@ public class HomePage {
     private JButton disAbleDnsButton;
     private JButton disAbleDhcpButton;
     private JButton disAbleDnsServerButton;
+    private JList statusInterfaceList;
+    private JScrollPane statusInterfacePanel;
     private final ApiClient apiClient;
     private final boolean isDarkMode;
 
@@ -186,6 +188,7 @@ public class HomePage {
 
         try {
             setDashboardValues();
+            fillStatusInterfaceList();
             if (isThemeDark) {          //Grey                        //White
                 buildChart(new Color(60, 63, 65), new Color(242, 242, 242));
                 setStyle(new Color(60, 63, 65),new Color(242, 242, 242));
@@ -2267,6 +2270,16 @@ public class HomePage {
 
     }
 
+    private void fillStatusInterfaceList() throws Exception {
+        DefaultListModel<String> model = new DefaultListModel<>();
+
+        for (getAllInterfaces interf : apiClient.getAllInterfaces()){
+            model.addElement(interf.getAllInterfacesRunnung());
+        }
+        statusInterfaceList.setModel(model);
+        statusInterfacePanel.setVisible(true);
+    }
+
     private void formatTable(JTable table,DefaultTableModel model) {
         table.setModel(model);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -2437,13 +2450,13 @@ public class HomePage {
 
         JComponent[] components = {
                 //Panels
-                mainPanel,contentPanel, navBar, topBar,cpuPanel,statsPanel,dhcpPanel,interfacePanel,addrPanel,dnsPanel,interfacesAllPanel,routePanel,updatePanel,
+                mainPanel,contentPanel, navBar, topBar,cpuPanel,statsPanel,dhcpPanel,interfacePanel,addrPanel,dnsPanel,interfacesAllPanel,routePanel,updatePanel,statusInterfacePanel,
                 //Top barLabels
                 hostLabel,userLabel, hostIpText, usernameText,
                 //VersionPanel
                 status,statusLabel,chanel,chanelLabel, installedLabel, installed,latestLabel,latest,
                 //StatsPanel Labels
-                frequency,freqLabel,cores,cpuLabel,cpuName,uptime,uptimeLabel,version,versionLabel,memoryLabel,loadLabel,coresLabel,hddLabel,
+                frequency,freqLabel,cores,cpuLabel,cpuName,uptime,uptimeLabel,version,versionLabel,memoryLabel,loadLabel,coresLabel,hddLabel,statusInterfaceList,
                 //DNS Panel
                 dnsTabbed,cacheTable,recordsTable,disAbleDnsServerButton,
                 //InterfacesPanel

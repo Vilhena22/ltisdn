@@ -24,4 +24,8 @@ public class getAllInterfaces {
     @SerializedName("rx-drop")
     public long rxDrop;
 
+
+    public String getAllInterfacesRunnung(){
+        return "Interface: " + name + " Status: " + running;
+    }
 }

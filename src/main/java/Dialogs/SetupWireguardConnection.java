@@ -16,6 +16,9 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SetupWireguardConnection extends JDialog {
     private JPanel contentPane;
@@ -278,38 +281,38 @@ public class SetupWireguardConnection extends JDialog {
 
     private void onOK() {
         try {
-            String interfaceID;
             if (checkAllFields()) {
-                InterfaceWG interfaceWG = new InterfaceWG();
-                interfaceWG.name = interfaceNameTextField.getText();
-                interfaceWG.listenPort = sliderInterfacePort.getValue();
-                interfaceWG.disabled = disabledCheckBox.isSelected();
-                ApiResponse response = apiClient.postWireguardInterface(interfaceWG);
+                Peer newPeer = new Peer();
+                newPeer.name = peerNameTextField.getText();
+                newPeer.inter = "wg1";
+                LinkedList<String> ipUsed = new LinkedList<>();
+                for (Peer peer : apiClient.getPeersWireGuard()){
+                    String[] ip = peer.allowedAddress.split("/");
+                    ipUsed.add(ip[0]);
+                }
+                int min = 2;
+                int max = 254;
+                int newIp ;
+                do {
+                    newIp = ThreadLocalRandom.current().nextInt(min, max );
+                }while (ipUsed.contains("192.168.100."+newIp));
+                newPeer.allowedAddress = "192.168.100."+newIp;
+                newPeer.presharedKey = preshareBG.getSelection().getActionCommand();
+                newPeer.privateKey = "auto";
+                newPeer.disabled = disabledCheckBox.isSelected();
+                newPeer.clientEndpoint = "192.168.31.209"; //TEM DE SER ALTERADo
+                newPeer.clientDns = newPeer.clientEndpoint;
+                newPeer.clientAddress = newPeer.allowedAddress;
+                ApiResponse response =  apiClient.postWireguardPeer(newPeer);
                 if( response.ret != null){
-                    interfaceID = response.ret;
-                    Peer newPeer = new Peer();
-                    newPeer.name = peerNameTextField.getText();
-                    newPeer.inter = interfacePeer.getText();
-                    newPeer.endpointAddress = endpointADRFormattedText.getText();
-                    newPeer.endpointPort = sliderPeerPort.getValue();
-                    newPeer.allowedAddress = allowedADRFormattedText.getText();
-                    newPeer.presharedKey = preshareBG.getSelection().getActionCommand();
-                    newPeer.privateKey = "auto";
-                    newPeer.disabled = disabledCheckBox.isSelected();
-                    response = apiClient.postWireguardPeer(newPeer);
-                    if( response.ret != null){
-                        if (yesConfig.isSelected()) {
-                            ArrayList<ClientConfig> clientConfig = apiClient.getWireguardClinentConfig(response.ret);
-                            GenerateClientConfig gcc = new GenerateClientConfig(clientConfig.getFirst(),owner);
-                            gcc.pack();
-                            gcc.setLocationRelativeTo(owner);
-                            gcc.setVisible(true);
-                        }
-                        dispose();
-                    }else {
-                        apiClient.deleteWireguardInterface(interfaceID);
-                        JOptionPane.showMessageDialog(owner,"Error: " + response.detail,"Error",JOptionPane.ERROR_MESSAGE);
+                    if (yesConfig.isSelected()) {
+                        ArrayList<ClientConfig> clientConfig = apiClient.getWireguardClinentConfig(response.ret);
+                        GenerateClientConfig gcc = new GenerateClientConfig(clientConfig.getFirst(),owner);
+                        gcc.pack();
+                        gcc.setLocationRelativeTo(owner);
+                        gcc.setVisible(true);
                     }
+                    dispose();
                 }else {
                     JOptionPane.showMessageDialog(owner,"Error: " + response.detail,"Error",JOptionPane.ERROR_MESSAGE);
                 }

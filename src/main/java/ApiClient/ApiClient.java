@@ -681,6 +681,11 @@ public class ApiClient {
 
     /// INTERFACES
 
+    public String getInterfaceByName(String name) throws Exception {
+        sendRequestGet("/ip/interface/name/"+name);
+        return "a";
+    }
+
     //WiFi
     //Interfaces
 
