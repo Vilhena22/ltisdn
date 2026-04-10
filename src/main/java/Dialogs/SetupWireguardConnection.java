@@ -300,7 +300,7 @@ public class SetupWireguardConnection extends JDialog {
                 newPeer.presharedKey = preshareBG.getSelection().getActionCommand();
                 newPeer.privateKey = "auto";
                 newPeer.disabled = disabledCheckBox.isSelected();
-                newPeer.clientEndpoint = "192.168.31.209"; //TEM DE SER ALTERADo
+                newPeer.clientEndpoint = apiClient.getInterfaceByName(interfaceNameTextField.getText()); //TEM DE SER ALTERADo
                 newPeer.clientDns = newPeer.clientEndpoint;
                 newPeer.clientAddress = newPeer.allowedAddress;
                 ApiResponse response =  apiClient.postWireguardPeer(newPeer);

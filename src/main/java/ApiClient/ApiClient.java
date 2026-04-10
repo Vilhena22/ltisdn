@@ -682,8 +682,13 @@ public class ApiClient {
     /// INTERFACES
 
     public String getInterfaceByName(String name) throws Exception {
-        sendRequestGet("/ip/interface/name/"+name);
-        return "a";
+        String endpoint = sendRequestGet("/ip/address?interface="+name);
+
+        //converte json em objeto
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<GetInterfacesWiFi>>(){}.getType();
+
+        return gson.fromJson(endpoint, listType);
     }
 
     //WiFi
