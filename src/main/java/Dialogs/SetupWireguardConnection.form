@@ -51,7 +51,7 @@
           </grid>
         </children>
       </grid>
-      <grid id="e3588" layout-manager="GridLayoutManager" row-count="7" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e3588" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -59,89 +59,17 @@
         <properties/>
         <border type="none"/>
         <children>
-          <grid id="67f84" binding="interfacePanel" layout-manager="GridLayoutManager" row-count="3" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="627fe" layout-manager="GridLayoutManager" row-count="2" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
             <margin top="0" left="0" bottom="0" right="0"/>
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties/>
-            <border type="none"/>
-            <children>
-              <component id="54808" class="javax.swing.JSlider" binding="sliderInterfacePort">
-                <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <maximum value="65535"/>
-                  <minimum value="1"/>
-                  <paintLabels value="true"/>
-                  <snapToTicks value="false"/>
-                  <value value="51820"/>
-                  <valueIsAdjusting value="true"/>
-                </properties>
-              </component>
-              <component id="47f6" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Interface Name"/>
-                </properties>
-              </component>
-              <component id="b510e" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Listen Port Number"/>
-                </properties>
-              </component>
-              <component id="e467c" class="javax.swing.JFormattedTextField" binding="interfaceListenPortFormattedTextField">
-                <constraints>
-                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
-                    <preferred-size width="50" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <focusCycleRoot value="true"/>
-                  <font name="JetBrains Mono" size="14"/>
-                  <toolTipText value="Listen Port Number"/>
-                </properties>
-              </component>
-              <component id="1f198" class="javax.swing.JTextField" binding="interfaceNameTextField">
-                <constraints>
-                  <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                </properties>
-              </component>
-              <component id="80431" class="javax.swing.JCheckBox" binding="disabledCheckBox" default-binding="true">
-                <constraints>
-                  <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Disabled"/>
-                </properties>
-              </component>
-            </children>
-          </grid>
-          <grid id="627fe" binding="peerPanel" layout-manager="GridLayoutManager" row-count="7" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-            <margin top="0" left="0" bottom="0" right="0"/>
-            <constraints>
-              <grid row="3" column="0" row-span="1" col-span="3" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
             <border type="none"/>
             <children>
               <component id="e68b0" class="javax.swing.JLabel">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <font name="JetBrains Mono" size="14"/>
@@ -150,89 +78,17 @@
               </component>
               <component id="c405c" class="javax.swing.JTextField" binding="peerNameTextField">
                 <constraints>
-                  <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                  <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                     <preferred-size width="150" height="-1"/>
                   </grid>
                 </constraints>
                 <properties>
                   <font name="JetBrains Mono" size="14"/>
-                </properties>
-              </component>
-              <component id="5935c" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Interface"/>
-                </properties>
-              </component>
-              <component id="bd268" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Endpoint Address"/>
-                </properties>
-              </component>
-              <component id="d7b17" class="javax.swing.JFormattedTextField" binding="endpointADRFormattedText">
-                <constraints>
-                  <grid row="3" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                </properties>
-              </component>
-              <component id="5eb4c" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Endpoint Port"/>
-                </properties>
-              </component>
-              <component id="f26a7" class="javax.swing.JSlider" binding="sliderPeerPort">
-                <constraints>
-                  <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <maximum value="65535"/>
-                  <minimum value="49152"/>
-                  <paintLabels value="true"/>
-                  <snapToTicks value="false"/>
-                  <value value="51820"/>
-                  <valueIsAdjusting value="true"/>
-                </properties>
-              </component>
-              <component id="1d3ba" class="javax.swing.JFormattedTextField" binding="peerListenPortFormattedTextField">
-                <constraints>
-                  <grid row="4" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="0" indent="0" use-parent-layout="false">
-                    <preferred-size width="50" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <focusCycleRoot value="true"/>
-                  <font name="JetBrains Mono" size="14"/>
-                  <toolTipText value="Listen Port Number"/>
-                </properties>
-              </component>
-              <component id="138bc" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Allowed Address"/>
                 </properties>
               </component>
               <component id="f4196" class="javax.swing.JLabel">
                 <constraints>
-                  <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <font name="JetBrains Mono" size="14"/>
@@ -241,7 +97,7 @@
               </component>
               <component id="a125" class="javax.swing.JRadioButton" binding="noneRadioButton" default-binding="true">
                 <constraints>
-                  <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <font name="JetBrains Mono" size="14"/>
@@ -250,71 +106,18 @@
               </component>
               <component id="10fa7" class="javax.swing.JRadioButton" binding="autoRadioButton" default-binding="true">
                 <constraints>
-                  <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
                   <font name="JetBrains Mono" size="14"/>
                   <text value="Auto"/>
                 </properties>
               </component>
-              <component id="d2863" class="javax.swing.JFormattedTextField" binding="allowedADRFormattedText">
-                <constraints>
-                  <grid row="5" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
-                    <preferred-size width="150" height="-1"/>
-                  </grid>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                </properties>
-              </component>
-              <component id="66f3d" class="javax.swing.JLabel" binding="interfacePeer">
-                <constraints>
-                  <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="14"/>
-                  <text value="Label"/>
-                </properties>
-              </component>
-              <component id="aa350" class="javax.swing.JLabel">
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="4" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <font name="JetBrains Mono" size="16"/>
-                  <text value="Wireguard Peer Setup"/>
-                </properties>
-              </component>
             </children>
           </grid>
-          <component id="29375" class="javax.swing.JSeparator" binding="divider">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <orientation value="0"/>
-            </properties>
-          </component>
-          <component id="6f35b" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font name="JetBrains Mono" size="16"/>
-              <text value="Wireguard Interface Setup"/>
-            </properties>
-          </component>
-          <component id="919ad" class="javax.swing.JSeparator" binding="divider2">
-            <constraints>
-              <grid row="4" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <orientation value="0"/>
-            </properties>
-          </component>
           <component id="b27a3" class="javax.swing.JLabel">
             <constraints>
-              <grid row="5" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="0" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <font name="JetBrains Mono" size="14"/>
@@ -323,7 +126,7 @@
           </component>
           <component id="7d8b5" class="javax.swing.JRadioButton" binding="noConfig">
             <constraints>
-              <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <font name="JetBrains Mono" size="14"/>
@@ -332,7 +135,7 @@
           </component>
           <component id="e6982" class="javax.swing.JRadioButton" binding="yesConfig">
             <constraints>
-              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <font name="JetBrains Mono" size="14"/>

@@ -1,5 +1,6 @@
 package Models.Interfaces.wifi.interfaces;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.annotations.SerializedName;
 
 public class GetInterfacesWiFi {
@@ -8,6 +9,8 @@ public class GetInterfacesWiFi {
     public String id;
 
     public String name;
+    @JsonIgnore
+    public String address;
 
     @SerializedName("master-interface")
     public String master_interface;

@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.*;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
@@ -550,34 +549,6 @@ public class ApiClient {
         return sb.toString();
     }
 
-    private String sendRequestPut(String endpoint,String jsonBody) throws Exception {
-        HttpsURLConnection conn = getHttpsURLConnection(endpoint);
-
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestMethod("PUT");
-        conn.setDoOutput(true);
-
-        //Converte o Json para enviar
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
-            os.flush();
-        }
-
-        int status = conn.getResponseCode();
-
-        InputStream is = (status >= 200 && status < 300)
-                ? conn.getInputStream()
-                : conn.getErrorStream();
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) sb.append(line);
-        br.close();
-
-        return sb.toString();
-    }
-
 
     private Integer sendRequestDelete(String endpoint) throws Exception {
         HttpsURLConnection conn = getHttpsURLConnection(endpoint);
@@ -687,8 +658,8 @@ public class ApiClient {
         //converte json em objeto
         Gson gson = new Gson();
         Type listType = new TypeToken<List<GetInterfacesWiFi>>(){}.getType();
-
-        return gson.fromJson(endpoint, listType);
+        List<GetInterfacesWiFi> ip = gson.fromJson(endpoint, listType);
+        return ip.getFirst().address.split("/")[0];
     }
 
     //WiFi
