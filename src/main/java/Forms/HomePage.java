@@ -649,9 +649,9 @@ public class HomePage {
         clearTableSelection(TablesTypes.ROUTE);
         boolean isEdited = editRouteButton.isSelected();
         if (!isEdited) {
-            editRouteButton.setText("Disable Edit");
-        }else {
             editRouteButton.setText("Enable Edit");
+        }else {
+            editRouteButton.setText("Disable Edit");
         }
         fillStaticRouteTable(isEdited);
         clearTableSelection(TablesTypes.ROUTE);
@@ -880,7 +880,17 @@ public class HomePage {
         comboBox.addItem("false");
         comboBox.addItem("true");
 
+        JComboBox<String> comboBoxRoute = new JComboBox<>();
+        try {
+            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
+                comboBoxRoute.addItem(interf.name);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         tableRoute.getColumnModel().getColumn(5).setCellEditor(new DefaultCellEditor(comboBox));
+        tableRoute.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(comboBoxRoute));
         tableRoute.putClientProperty("terminateEditOnFocusLost", true);
 
         //Este listener é o responsavel por esta à espera que cliques no enter ou fora da box
@@ -891,6 +901,7 @@ public class HomePage {
                 if (col == TableModelEvent.ALL_COLUMNS) return;
 
                 comboBox.setSelectedItem(tableRoute.getValueAt(row, col));
+                comboBoxRoute.setSelectedItem(tableRoute.getValueAt(row, col));
 
                 Routes route = new Routes();
                 route.dst_address = tableRoute.getValueAt(row, 3).toString();

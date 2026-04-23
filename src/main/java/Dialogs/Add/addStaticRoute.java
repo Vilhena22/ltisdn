@@ -43,6 +43,14 @@ public class addStaticRoute extends JDialog {
 
         // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        try {
+            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
+                comboBoxGateway.addItem(interf.name);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     private final Pattern ADDRESS_PATTERN = Pattern.compile(
             "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
@@ -78,13 +86,7 @@ public class addStaticRoute extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        try {
-            for (getAllInterfaces interf : apiClient.getAllInterfaces()) {
-                comboBoxGateway.addItem(interf.name);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
 
         // Only runs when input is valid
         try {
