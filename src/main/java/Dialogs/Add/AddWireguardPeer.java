@@ -7,7 +7,9 @@ import Models.Wireguard.Peer;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AddWireguardPeer extends JDialog {
     private JPanel contentPane;
@@ -15,24 +17,15 @@ public class AddWireguardPeer extends JDialog {
     private JButton buttonCancel;
     private JTextField nameTextField;
     private JComboBox interfacesComboBox;
-    private JFormattedTextField endpointADRFormattedText;
     private JSlider slider1;
     private JFormattedTextField listenPortFormattedTextField;
     private JRadioButton noneRadioButton;
     private JRadioButton autoRadioButton;
-    private JFormattedTextField allowedADRFormattedText;
     private final JFrame owner;
     private final ApiClient apiClient;
     private final ButtonGroup preshareBG;
 
 
-    private static final String IPV4_REGEX =
-            "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
-                    "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)$";
-
-    private static final String CIDR_REGEX =
-            "^((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)\\.){3}" +
-                    "(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)/(3[0-2]|[12]?\\d)$";
 
     public AddWireguardPeer(JFrame owner, ApiClient apiClient) {
         super(owner, "Add Wireguard Peer", true);
@@ -125,40 +118,6 @@ public class AddWireguardPeer extends JDialog {
             }
         });
 
-        endpointADRFormattedText.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                String text = endpointADRFormattedText.getText().trim();
-
-                if (!text.matches(IPV4_REGEX)) {
-                    JOptionPane.showMessageDialog(null, "Endpoint inválido (IPv4). Ex: 203.0.112.10");
-                    endpointADRFormattedText.setText("");
-                }
-            }
-        });
-
-        allowedADRFormattedText.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                String text = allowedADRFormattedText.getText().trim();
-
-                if (text.isEmpty()) return;
-
-                String[] parts = text.split(",");
-
-                for (String part : parts) {
-                    String cidr = part.trim();
-
-                    if (!cidr.matches(CIDR_REGEX)) {
-                        JOptionPane.showMessageDialog(null,
-                                "CIDR inválido: " + cidr + "\nEx: 192.168.56.0/24");
-                        allowedADRFormattedText.setText("");
-                        return;
-                    }
-                }
-            }
-        });
-
         try {
             for (InterfaceWG interfaceWG : apiClient.getInterfacesWireGuard()){
                 interfacesComboBox.addItem(interfaceWG.name);
@@ -171,18 +130,32 @@ public class AddWireguardPeer extends JDialog {
     }
 
     private void onOK() {
-        if (nameTextField.getText().isEmpty() || endpointADRFormattedText.getText().isEmpty() || allowedADRFormattedText.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Fill all the fields!", "Error", JOptionPane.ERROR_MESSAGE);
+        if (nameTextField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Give a name for the peer", "Error", JOptionPane.ERROR_MESSAGE);
         }
         try {
             Peer newPeer = new Peer();
             newPeer.name = nameTextField.getText();
             newPeer.inter = Objects.requireNonNull(interfacesComboBox.getSelectedItem()).toString();
-            newPeer.endpointAddress = endpointADRFormattedText.getText();
+            LinkedList<String> ipUsed = new LinkedList<>();
+            for (Peer peer : apiClient.getPeersWireGuard()){
+                String[] ip = peer.allowedAddress.split("/");
+                ipUsed.add(ip[0]);
+            }
+            int min = 2;
+            int max = 254;
+            int newIp ;
+            do {
+                newIp = ThreadLocalRandom.current().nextInt(min, max );
+            }while (ipUsed.contains("192.168.100."+newIp));
+            newPeer.allowedAddress = "192.168.100."+newIp;
+
             newPeer.endpointPort = slider1.getValue();
-            newPeer.allowedAddress = allowedADRFormattedText.getText();
             newPeer.presharedKey = preshareBG.getSelection().getActionCommand();
             newPeer.privateKey = "auto";
+            newPeer.clientEndpoint = apiClient.getIpAddressOnInterfaceByName("ether1");
+            newPeer.clientDns = newPeer.clientEndpoint;
+            newPeer.clientAddress = newPeer.allowedAddress;
             ApiResponse response = apiClient.postWireguardPeer(newPeer);
             if( response.ret != null){
                 dispose();

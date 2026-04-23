@@ -6,7 +6,6 @@ import Models.Wireguard.ClientConfig;
 import Models.Wireguard.Peer;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -97,7 +96,7 @@ public class SetupWireguardConnection extends JDialog {
                 newPeer.presharedKey = preshareBG.getSelection().getActionCommand();
                 newPeer.privateKey = "auto";
                 newPeer.disabled = false;
-                newPeer.clientEndpoint = apiClient.getInterfaceByName("ether1"); //TEM DE SER ALTERADo
+                newPeer.clientEndpoint = apiClient.getIpAddressOnInterfaceByName("ether1");
                 newPeer.clientDns = newPeer.clientEndpoint;
                 newPeer.clientAddress = newPeer.allowedAddress;
                 ApiResponse response =  apiClient.postWireguardPeer(newPeer);

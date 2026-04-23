@@ -652,7 +652,7 @@ public class ApiClient {
 
     /// INTERFACES
 
-    public String getInterfaceByName(String name) throws Exception {
+    public String getIpAddressOnInterfaceByName(String name) throws Exception {
         String endpoint = sendRequestGet("/ip/address?interface="+name);
 
         //converte json em objeto

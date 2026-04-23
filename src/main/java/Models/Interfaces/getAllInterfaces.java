@@ -21,6 +21,11 @@ public class getAllInterfaces {
 
 
     public String getAllInterfacesRunnung(){
-        return "Interface: " + name + " Status: " + running;
+        String state = "not running";
+        if (running.equals("true")){
+            state = "running";
+        }
+
+        return String.format("Interface: %-20s Status: %s", name, state);
     }
 }
