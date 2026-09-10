@@ -87,7 +87,7 @@ ltisdn/
 ## Authors
 
 - Francisco Vilhena — [@Vilhena22](https://github.com/Vilhena22)
-- Pedro Gomes - (https://github.com/PedroGomesReis)
+- Pedro Gomes - [@PedroGomesReis](https://github.com/PedroGomesReis)
 
 ## Academic context
 
